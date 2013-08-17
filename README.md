@@ -3,6 +3,12 @@ login-node
 
 Sistema de login con nodejs, express y mongoDB
 
+Primero se deben instalar los requerimientos con el comando:
+
+```
+npm install
+```
+
 Se necesita agregar el archivo smtpTransport_helper.js con la siguiente estructura:
 
 ```
@@ -16,3 +22,12 @@ exports.smtpTransport = nodemailer.createTransport("SMTP",{
     }
 });
 ```
+
+Tambien cambiar la ruta del proyecto en el archivo nginx.conf, luego agregar el archivo nginx.conf a los 'sites-enabled' de nginx y reiniciar el servidor.
+
+Al ejecutar servicio se debe establecer el ambiente de desarrollo o de produccion con:
+
+```
+NODE_ENV=development node app
+```
+
