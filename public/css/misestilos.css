@@ -374,5 +374,39 @@ select:focus:invalid:focus {
 }
 
 h1.titulo{
-	text-align:center;
+  text-align:center;
+}
+body{
+    padding-top: 90px;
+}
+@media screen and (min-width: 782px){
+  body{
+    padding-top: 70px;
+  }
+}
+footer{
+  color:#888;
+  text-align:center;
+  font-size:0.9em;
+}
+
+div.lista-elementos span.item-lista{
+  font-size:1.2em;
+  font-weight: bolder;
+}
+div.lista-elementos .acciones{
+  text-align: right;
+}
+
+div.boton-agregar {
+  margin:10px 0 20px;
+}
+#paginacion{
+  text-align: right;
+  line-height: 2em;
+  border-radius: 1em;
+  padding:10px 16px;
+}
+.btn-xs{  
+  box-shadow: 3px 3px 2px #888;
 }

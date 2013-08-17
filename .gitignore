@@ -13,5 +13,8 @@ pids
 logs
 results
 
+helpers/smtpTransport_helper.js
+FIXTURES.js
+
 npm-debug.log
 node_modules

@@ -1,2 +1,2 @@
 <% layout('layout') -%>
-<h1 class="titulo">Bienvenido <%= usuario %></h1>
+<% block('navbar', partial('_navbar', {usuario_actual: usuario_actual})) %>

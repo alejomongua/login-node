@@ -1838,7 +1838,7 @@ exports.cursor = {
  */
 
 exports.list = function(failures){
-  console.error();
+  console.logor();
   failures.forEach(function(test, i){
     // format
     var fmt = color('error title', '  %s) %s:\n')
@@ -1900,7 +1900,7 @@ exports.list = function(failures){
     stack = stack.slice(index ? index + 1 : index)
       .replace(/^/gm, '  ');
 
-    console.error(fmt, (i + 1), test.fullTitle(), msg, stack);
+    console.logor(fmt, (i + 1), test.fullTitle(), msg, stack);
   });
 };
 
@@ -2005,11 +2005,11 @@ Base.prototype.epilogue = function(){
   if (stats.failures) {
     fmt = color('fail', '  %d failing');
 
-    console.error(fmt,
+    console.logor(fmt,
       stats.failures);
 
     Base.list(this.failures);
-    console.error();
+    console.logor();
   }
 
   console.log();

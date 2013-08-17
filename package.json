@@ -13,9 +13,13 @@
     "mocha":"*",
     "nodemailer":"*",
     "chai": "*",
+    "should": "*",
     "mongoose":"*",
     "bcrypt":"*",
+    "crypto":"*",
     "request":"*",
-    "zombie":"*"
+    "zombie":"*",
+    "moment":"*",
+    "express-helpers": "*"
   }
 }
