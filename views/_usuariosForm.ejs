@@ -3,6 +3,7 @@
     <form accept-charset="UTF-8" action="/usuarios<%= usuario._id ? '/' + usuario._id : '' %>" method="post">
         <% if (usuario._id) { %>
           <input type="hidden" name="_method" value="PUT">
+          <input type="hidden" name="usuario[_id]" value="<%= usuario._id %>">
         <% } %>
         <%- formularios.campo('usuario', 'nombres', 'texto', usuario, error, {
             data: {
@@ -17,18 +18,6 @@
         <%- formularios.campo('usuario', 'email', 'texto', usuario, error, {
             data: {
               validaciones: 'noVacio email'
-            }
-          }) %>
-        <%- formularios.campo('usuario', 'password', 'password', usuario, error, {
-            label: 'Contraseña',
-            data: {
-              validaciones:'noVacio password'
-            }
-          }) %>
-        <%- formularios.campo('usuario', 'password_confirm', 'password', usuario, error, {
-            label: 'Confirmar contraseña',
-            data: {
-              validaciones:'noVacio password_confirm'
             }
           }) %>
         <%- formularios.campo('usuario', 'tipo_id', 'seleccion', usuario, error, {

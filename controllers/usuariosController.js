@@ -317,39 +317,39 @@ exports.update = function(req, res){
         (req.params.id == req.session.usuario_actual._id &&
           !(req.body.usuario.permisos))) {
 
-      usuarios.model.findByIdAndUpdate(req.params.id, req.body.usuario, function(err, doc){
-        if (err) {
+      usuarios.update(req.params.id, req.body.usuario, function(usuario){
+
+        if (usuario){
+          if (usuario._id == req.session.usuario_actual._id){
+            req.session.usuario_actual = usuario;
+
+          }
+          if(req.is('json')){
+            res.send({
+              usuario: usuario
+            });
+          } else {
+            res.redirect('/usuarios/' + usuario._id);
+          }
+        } else {
+          res.status(404).redirect('/404.html');
+        }
+      }, function(err){
+        if(err.errors){
           if(req.is('json')){
             res.send(400,{
-              error: err,
+              error: err.errors,
               usuario: req.body.usuario
             });
           } else {
             res.render('usuariosEdit', {
-              titulo: 'Crear nuevo usuario',
+              titulo: 'Editar ' + req.body.usuario.nombres,
               error: err.errors,
               usuario: req.body.usuario
             });
           }
         } else {
-          if (doc){
-            var usuario = doc.toJSON();
-
-            delete usuario['password_digest'];
-            delete usuario['remember_token'];
-            delete usuario['fecha_token'];
-            delete usuario['token'];
-
-            if(req.is('json')){
-              res.send({
-                usuario: usuario
-              });
-            } else {
-              res.redirect('/usuarios/' + usuario._id);
-            }
-          } else {
-            res.status(404).redirect('/404.html');
-          }
+          res.status(500).redirect('/500.html');
         }
       });
     } else {

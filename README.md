@@ -14,7 +14,7 @@ Se necesita agregar el archivo smtpTransport_helper.js con la siguiente estructu
 ```
 var nodemailer = require("nodemailer");
 
-exports.smtpTransport = nodemailer.createTransport("SMTP",{
+module.exports = nodemailer.createTransport("SMTP",{
     service: "Gmail",
     auth: {
         user: "your-gmail-username@gmail.com",

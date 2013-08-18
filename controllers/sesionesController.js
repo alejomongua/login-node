@@ -6,7 +6,7 @@ var sesion = require('../helpers/sesion_helper');
 exports.create = function(req, res){
   if (typeof req.body.sesion === 'undefined') {
     if (req.is('json')){
-      res.send({'error': 'No se recibieron datos'});
+      res.send(400,{'error': 'No se recibieron datos'});
     } else {
       req.session.messages['error'] = 'No se recibieron datos';
       res.redirect('/');
@@ -20,7 +20,7 @@ exports.create = function(req, res){
       }
     }, function(err){                        // fail
       if (req.is('json')){
-        res.send({error: err});
+        res.send(400, {error: err});
       } else {
         req.session.messages['error'] = err;
         res.redirect('/');
@@ -37,7 +37,7 @@ exports.destroy = function(req, res){
   res.clearCookie('remember_token');
   
   if (req.is('json')){
-    res.send({});
+    res.send({mensaje: "Sesion terminada"});
   } else {
     res.redirect('/');
   }

@@ -22,7 +22,7 @@ describe("Frontend", function(){
   });
 
   beforeEach(function(done){
-      usuarios = require("../routes/helpers/db_helper").usuarios;
+      usuarios = require("../helpers/db_helper").usuarios;
       //add some test data    
       usuarios.model.create({
         email:'alejom.tv@gmail.com',

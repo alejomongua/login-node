@@ -1,5 +1,4 @@
-var mongoose = require("mongoose"),
-    http = require('request'),
+var http = require('request'),
     usuarios,
     url = 'http://localhost';
 
@@ -28,9 +27,14 @@ describe("Usuarios", function(){
       nombres: 'Admin',
       apellidos: 'Mongua Lopez',
       password: 'foobar',
+      password_confirm: 'foobar',
       documento: '1023863935',
       permisos: ['usuarios']
     }, function(err, usuario){
+      if(err){
+        console.log('Error: ' + err);
+        return
+      }
       admin = usuario;
       done();
     });
@@ -44,8 +48,13 @@ describe("Usuarios", function(){
       nombres: 'Luis Alejandro',
       apellidos: 'Mongua Lopez',
       password: 'foobar',
+      password_confirm: 'foobar',
       documento: '1032369640'
     }, function(err, usuario){
+      if(err){
+        console.log('Error: ' + err);
+        return
+      }
       currentUser = usuario;
       done();
     });
@@ -78,7 +87,7 @@ describe("Usuarios", function(){
       });
     });
 
-    it('should not update a user without permisions', function(done){
+    it('should not update a its permisions', function(done){
       var cookieJar = http.jar();
       cookieJar.add(http.cookie('remember_token=' + currentUser.remember_token));
       http.put({
@@ -159,6 +168,86 @@ describe("Usuarios", function(){
       });
     });
 
+    it('run validations on update', function(done){
+      var cookieJar = http.jar();
+      cookieJar.add(http.cookie('remember_token=' + admin.remember_token));
+      http.put({
+        url: url + '/usuarios/' + currentUser._id,
+        jar: cookieJar,
+        json: true,
+        body: {
+          usuario: {
+            email: ''
+          }
+        }
+      }, function (err, res, body) {
+        if (err) throw("This shouldn't happen");
+        res.statusCode.should.not.be.equal(200);
+        Object.keys(body).should.include('error');
+        done();
+      });
+    });
+
+    it('run validations on update (email uniqueness)', function(done){
+      var cookieJar = http.jar();
+      cookieJar.add(http.cookie('remember_token=' + admin.remember_token));
+      http.put({
+        url: url + '/usuarios/' + currentUser._id,
+        jar: cookieJar,
+        json: true,
+        body: {
+          usuario: {
+            email: admin.email
+          }
+        }
+      }, function (err, res, body) {
+        if (err) throw("This shouldn't happen");
+        res.statusCode.should.not.be.equal(200);
+        Object.keys(body).should.include('error');
+        done();
+      });
+    });
+
+    it('run validations on update (password)', function(done){
+      var cookieJar = http.jar();
+      cookieJar.add(http.cookie('remember_token=' + admin.remember_token));
+      http.put({
+        url: url + '/usuarios/' + currentUser._id,
+        jar: cookieJar,
+        json: true,
+        body: {
+          usuario: {
+            password: 'holatu',
+            password_confirm: 'chaotu'
+          }
+        }
+      }, function (err, res, body) {
+        if (err) throw("This shouldn't happen");
+        res.statusCode.should.not.be.equal(200);
+        Object.keys(body).should.include('error');
+        done();
+      });
+    });
+
+    it('run validations on update (password 2)', function(done){
+      var cookieJar = http.jar();
+      cookieJar.add(http.cookie('remember_token=' + admin.remember_token));
+      http.put({
+        url: url + '/usuarios/' + currentUser._id,
+        jar: cookieJar,
+        json: true,
+        body: {
+          usuario: {
+            password: 'holatu'
+          }
+        }
+      }, function (err, res, body) {
+        if (err) throw("This shouldn't happen");
+        res.statusCode.should.not.be.equal(200);
+        Object.keys(body).should.include('error');
+        done();
+      });
+    });
   });
   
   describe('Create', function (){
@@ -177,6 +266,7 @@ describe("Usuarios", function(){
             nombres: 'Jaimito',
             apellidos: 'Gomez',
             password: 'foobar',
+            password_confirm: 'foobar',
             documento: '900399908'
           }
         }
@@ -201,6 +291,7 @@ describe("Usuarios", function(){
             nombres: 'Jaimito',
             apellidos: 'Gomez',
             password: 'foobar',
+            password_confirm: 'foobar',
             documento: '900399908'
           }
         }
@@ -225,6 +316,7 @@ describe("Usuarios", function(){
             nombres: 'Jaimito',
             apellidos: 'Gomez',
             password: 'foobar',
+            password_confirm: 'foobar',
             documento: '900399908'
           }
         }
@@ -249,6 +341,7 @@ describe("Usuarios", function(){
             nombres: 'Jaimito',
             apellidos: 'Gomez',
             password: 'foobar',
+            password_confirm: 'foobar',
             documento: currentUser.documento
           }
         }
@@ -258,6 +351,106 @@ describe("Usuarios", function(){
         done();
       });
     });
+
+    it('run validations', function(done){
+      var cookieJar = http.jar();
+      cookieJar.add(http.cookie('remember_token=' + admin.remember_token));
+      http.post({
+        url: url + '/usuarios',
+        jar: cookieJar,
+        json: true,
+        body: {
+          usuario: {
+            email:'admin@example.com',
+            nombres: 'Jaimito',
+            apellidos: 'Gomez',
+            password: 'foobar',
+            password_confirm: 'foobar',
+            documento: '12345'
+          }
+        }
+      }, function (err, res, body) {
+        if (err) throw("This shouldn't happen");
+        res.statusCode.should.not.be.equal(200);
+        Object.keys(body).should.include('error');
+        done();
+      });
+    });
+
+    it('run validations (password)', function(done){
+      var cookieJar = http.jar();
+      cookieJar.add(http.cookie('remember_token=' + admin.remember_token));
+      http.post({
+        url: url + '/usuarios',
+        jar: cookieJar,
+        json: true,
+        body: {
+          usuario: {
+            email:'another23@example.com',
+            nombres: 'Jaimito',
+            apellidos: 'Gomez',
+            password: 'foobar',
+            password_confirm: 'foovar',
+            documento: '123456'
+          }
+        }
+      }, function (err, res, body) {
+        if (err) throw("This shouldn't happen");
+        res.statusCode.should.not.be.equal(200);
+        Object.keys(body).should.include('error');
+        done();
+      });
+    });
+    
+    it('run validations (no password confirm)', function(done){
+      var cookieJar = http.jar();
+      cookieJar.add(http.cookie('remember_token=' + admin.remember_token));
+      http.post({
+        url: url + '/usuarios',
+        jar: cookieJar,
+        json: true,
+        body: {
+          usuario: {
+            email:'another23@example.com',
+            nombres: 'Jaimito',
+            apellidos: 'Gomez',
+            password: 'foobar',
+            documento: '123456'
+          }
+        }
+      }, function (err, res, body) {
+        if (err) throw("This shouldn't happen");
+        res.statusCode.should.not.be.equal(200);
+        Object.keys(body).should.include('error');
+        done();
+      });
+    });
+
+    it('run validations (password too short)', function(done){
+      var cookieJar = http.jar();
+      cookieJar.add(http.cookie('remember_token=' + admin.remember_token));
+      http.post({
+        url: url + '/usuarios',
+        jar: cookieJar,
+        json: true,
+        body: {
+          usuario: {
+            email:'another23@example.com',
+            nombres: 'Jaimito',
+            apellidos: 'Gomez',
+            password: 'toosh',
+            password: 'toosh',
+            documento: '123456'
+          }
+        }
+      }, function (err, res, body) {
+        if (err) throw("This shouldn't happen");
+        res.statusCode.should.not.be.equal(200);
+        Object.keys(body).should.include('error');
+        done();
+      });
+    });
+
   });
 
   describe('Delete', function (){

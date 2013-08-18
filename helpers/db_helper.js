@@ -4,9 +4,9 @@ var dbHost = 'localhost';
 var dbName;
 
 if (process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'production') {
-  dbName = 'cloudSiiT';
+  dbName = 'developmentDB';
 } else {
-  dbName = 'cloudSiiTTest';
+  dbName = 'testDB';
 }
 
 console.log(dbName);
@@ -17,6 +17,7 @@ mongoose.connect(dbHost, dbName);
     var Usuarios = function (){
       var crypt = require('./crypt_helper'),
           _model,
+          _update,
           _findByEmail,
           _findById,
           _findByRememberToken,
@@ -33,10 +34,17 @@ mongoose.connect(dbHost, dbName);
 
       validadores.unique = function(field, message){
         _schema.path(field).validate(function(val, fn){
-          var query = {}
+          var query = {};
+          var id = this._id.toString();
           query[field] = val;
           _model.find(query).exec(function (err, vals) {
-            fn(err || vals.length === 0);
+            if (err){
+              fn(false);
+            } else if (vals.length === 0) {
+              fn(true);
+            } else {
+              fn(vals[0]._id.toString() === id);
+            }
           });
         }, message);
       };
@@ -62,8 +70,6 @@ mongoose.connect(dbHost, dbName);
         },
         password_digest: {
           type : String,
-          required: true,
-          validate: [validadores.notBlank, 'no debe estar en blanco']
         },
         remember_token: String,
         token: String,
@@ -77,15 +83,18 @@ mongoose.connect(dbHost, dbName);
         }
       });
 
+      // Validacion de password
       _schema.virtual('password')
       .get(function() {
-        return this._password;
+        return this._password; // Variable temporal
       })
       .set(function(value) {
         this._password = value;
+        // Calcule el digest y almacenelo
         this.password_digest = crypt.cryptPassword(value);
       });
-       
+      
+      // Confirmacion de password
       _schema.virtual('password_confirm')
       .get(function() {
         return this._password_confirm;
@@ -93,30 +102,34 @@ mongoose.connect(dbHost, dbName);
       .set(function(value) {
         this._password_confirm = value;
       });
-       
+      
       _schema.path('password_digest').validate(function(v) {
+        // Si se envia un password
         if (this._password) {
+          // Verifique que tenga al menos seis caracteres
           if (this.password.toString().length < 6) {
             this.invalidate('password', 'debe tener por lo menos 6 caracteres.');
           }
         }
-        if (this._password_confirm){
-          if (this._password !== this._password_confirm) {
-            this.invalidate('password_confirm', 'no coincide');
-          }
+        // Verifique que el password coincida con la confirmacion
+        if (this._password !== this._password_confirm) {
+          this.invalidate('password_confirm', 'no coincide');
         }
 
       }, null);
 
+      // Genera el avatar desde gravatar
       _schema.virtual('avatar').get(function(){
         var gravatar_id = crypto.createHash('md5').update(this.email).digest('hex');
         return "https://secure.gravatar.com/avatar/" + gravatar_id + '?s=' + s
       });
 
+      // Antes de guardar, genera un token aleatorio
       _schema.pre('save', function (next) {
         this.remember_token = crypt.token();
         next();
       });
+
       _model = mongoose.model('usuarios', _schema);
       
       validadores.unique('email', 'Correo electrónico ya registrado');
@@ -132,6 +145,32 @@ mongoose.connect(dbHost, dbName);
         });
       };
 
+      _update = function(id, usuario, success, fail){
+        _findById(id, function(doc){
+          if(doc){
+            for(key in usuario){
+              doc[key] = usuario[key];
+            }
+            doc.save(function(error){
+              if(error){
+                fail(error);
+              } else {
+                var usuario = doc.toJSON();
+
+                delete usuario['password_digest'];
+                delete usuario['remember_token'];
+                delete usuario['fecha_token'];
+                delete usuario['token'];
+                success(usuario);
+              }
+            });
+          } else {
+            success();
+          }
+        }, function(err){
+          fail(err);
+        });
+      }
       _findByRememberToken = function (rt, success, fail) {
         _model.findOne({'remember_token': rt}).exec(function(err, doc) {
           if(err){
@@ -160,14 +199,7 @@ mongoose.connect(dbHost, dbName);
             fail(err);
           } else {
             if (doc){
-              var u = doc.toJSON();
-
-              delete u['password_digest'];
-              delete u['remember_token'];
-              delete u['fecha_token'];
-              delete u['token'];
-
-              success(u);
+              success(doc);
             } else {
               success();
             }
@@ -178,6 +210,7 @@ mongoose.connect(dbHost, dbName);
       return {
         model: _model,
         schema: _schema,
+        update: _update,
         findById: _findById,
         findByEmail: _findByEmail,
         findByRememberToken: _findByRememberToken

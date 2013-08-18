@@ -28,6 +28,8 @@ formularios.campo = function(recurso, nombreDelCampo, tipo, valores, errores, op
   </div>
 </div>
 */
+  if (typeof valores === 'undefined') valores = {}
+  if (typeof errores === 'undefined') errores = {}
   var stringAMostrar = capitalizeFirstLetter(nombreDelCampo);
   var data = '';
   var multiple = '';
