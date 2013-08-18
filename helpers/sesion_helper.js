@@ -29,21 +29,24 @@ exports.identificar = function (req, res, success, fail) {
             console.log(err);
           } else if (resp) {
             remember_token = usuario.remember_token;
-            u = usuario.toJSON();
+            usuarios.model.findOneAndUpdate({_id: usuario._id}, {lastLogin: Date.now()}, function(err, doc){
+              u = doc.toJSON();
 
-            delete u['password_digest'];
-            delete u['remember_token'];
-            delete u['fecha_token'];
-            delete u['token'];
+              delete u['password_digest'];
+              delete u['remember_token'];
+              delete u['fecha_token'];
+              delete u['token'];
 
-            if (typeof req.body.sesion.recordar !== "undefined"){
-              // Queda almacenada la cookie por aproximadamente 3 años
-              res.cookie('remember_token', remember_token, {expires: new Date(Date.now() + 1e11)});  
-            } else {
-              res.cookie('remember_token', remember_token);
-            }
-            req.session.usuario_actual = u;
-            success(u);
+              if (typeof req.body.sesion.recordar !== "undefined"){
+                // Queda almacenada la cookie por aproximadamente 3 años
+                res.cookie('remember_token', remember_token, {expires: new Date(Date.now() + 1e11)});  
+              } else {
+                res.cookie('remember_token', remember_token);
+              }
+              req.session.usuario_actual = u;
+
+              success(u);
+            });
           } else {
             fail('Contraseña incorrecta');
           }
@@ -79,7 +82,7 @@ exports.autorizacion = function(allowedURLs, defaultURL) {
     allowedURLs.push(defaultURL);
   }
   return function(req, res, next){
-    if (typeof req.session.usuario_actual === 'undefined' && allowedURLs.indexOf(req.url) < 0){
+    if (typeof req.session.usuario_actual === 'undefined' && allowedURLs.indexOf(req._parsedUrl.pathname) < 0){
       req.session.messages['error'] = 'No autorizado';
       res.redirect('/');
     } else {

@@ -18,39 +18,52 @@ exports.recuperarPassword = function(req, res){
       res.redirect('/');
     }
   } else {
-    usuarios.findById(req.query.id,function(doc){
-      var usuario;
-      if(doc && (doc.fecha_token > Date.now()) && (doc.token === req.query.t) ) {
-        usuario = doc.toJSON();
-
-        delete usuario['password_digest'];
-        delete usuario['remember_token'];
-        delete usuario['fecha_token'];
-        delete usuario['token'];
-
-        req.session.usuario_actual = usuario;
-
+    usuarios.findById(req.query.id,function(error, usuario){
+      if (error){
+        console.log(err);
         if(req.is('json')){
-          res.send({usuario: usuario, url: '/usuarios/' + usuario._id + '/modificar_password' });
+          res.send(500,{error: 'Hubo un error con la base de datos'});
         } else {
-          req.session.messages['success'] = 'Asigne una nueva contraseña';
-          res.redirect('/usuarios/' + usuario._id + '/modificar_password');
-        }
-      } else {
-        if(req.is('json')){
-          res.send(404,{error: 'No encontrado'});
-        } else {
-          req.session.messages['error'] = 'Enlace no válido, tal vez lo copió incompleto o ya expiró';
+          req.session.messages['error'] = 'Hubo un error con la base de datos';
           res.redirect('/');
         }
-      }
-    },function(err){
-      console.log(err);
-      if(req.is('json')){
-        res.send(500,{error: 'Hubo un error con la base de datos'});
       } else {
-        req.session.messages['error'] = 'Hubo un error con la base de datos';
-        res.redirect('/');
+        var u;
+        var crypt = require('../helpers/crypt_helper');
+        console.log(usuario)
+        if(usuario && (usuario.fecha_token > Date.now()) && (usuario.token === req.query.t) ) {
+          remember_token = usuario.remember_token;
+          usuarios.model.findOneAndUpdate({_id: usuario._id}, {
+            lastLogin: Date.now(),
+            token: crypt.token(),
+            fecha_token: 0
+          }, function(err, doc){
+            if (err){
+              console.log(err);
+              res.redirect(500,'/500.html');
+            } else {
+              u = doc.toJSON();
+
+              delete u['password_digest'];
+              delete u['remember_token'];
+              delete u['fecha_token'];
+              delete u['token'];
+
+              res.cookie('remember_token', remember_token);
+              req.session.usuario_actual = u;
+              req.session.messages['success'] = 'Asigne una nueva contraseña';
+              res.redirect('/usuarios/' + usuario._id + '/modificar_password');
+            }
+          });
+
+        } else {
+          if(req.is('json')){
+            res.send(404,{error: 'No encontrado'});
+          } else {
+            req.session.messages['error'] = 'Enlace no válido, tal vez lo copió incompleto o ya expiró';
+            res.redirect('/');
+          }
+        }
       }
     });
   }
@@ -60,10 +73,49 @@ exports.recuperarPassword = function(req, res){
  * GET usuarios/:id/modificar_password
  */
 exports.modificarPassword = function(req, res){
-  res.render('usuariosModificarPassword',{
-    titulo: "Modificar contraseña",
-    id: req.params.id
-  });
+  var usuario = {};
+  if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1 ||
+      req.params.id == req.session.usuario_actual._id) {
+
+
+    usuarios.findById(req.params.id, function(err, usuario){
+      if (err){
+        console.log(err);
+        if(req.is('json')){
+          res.send(500,{error: 'Hubo un error con la base de datos'});
+        } else {
+          req.session.messages['error'] = 'Hubo un error con la base de datos';
+          res.redirect('/dashboard');
+        }
+      } else {
+        if (usuario) {
+          if(req.is('json')){
+            res.send({
+              url: '/usuarios/' + req.params.id + '/modificar_password',
+              usuario: usuario
+            });
+          } else {
+            res.render('usuariosModificarPassword', 
+              {
+                titulo: 'Modificar contraseña',
+                usuario: usuario,
+                error: {}
+            });
+          }
+        } else {
+          res.status(404).redirect('/404.html');
+        }
+      }
+    });
+
+  } else {
+    if(req.is('json')){
+      res.send(403,{error: 'No autorizado'})
+    } else {
+      req.session.messages['error'] = 'No autorizado';
+      res.redirect('/dashboard');
+    }
+  }
 };
 
 /*
@@ -170,30 +222,32 @@ exports.show = function(req, res){
   if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1 ||
       req.params.id == req.session.usuario_actual._id) {
 
-    usuarios.findById(req.params.id, function(usuario){
-      if (usuario) {
+    usuarios.findById(req.params.id, function(err, usuario){
+      if (err){
+        console.log(err);
         if(req.is('json')){
-          res.send({
-            url: '/usuarios/' + req.params.id,
-            usuario: usuario
-          });
+          res.send(500,{error: 'Hubo un error con la base de datos'});
         } else {
-          res.render('usuariosShow', 
-            {
-              titulo: usuario.nombres,
-              usuario: usuario,
-          });
+          req.session.messages['error'] = 'Hubo un error con la base de datos';
+          res.redirect('/dashboard');
         }
       } else {
-        res.status(404).redirect('/404.html');
-      }
-    }, function(err){
-      console.log(err);
-      if(req.is('json')){
-        res.send(500,{error: 'Hubo un error con la base de datos'});
-      } else {
-        req.session.messages['error'] = 'Hubo un error con la base de datos';
-        res.redirect('/dashboard');
+        if (usuario) {
+          if(req.is('json')){
+            res.send({
+              url: '/usuarios/' + req.params.id,
+              usuario: usuario
+            });
+          } else {
+            res.render('usuariosShow', 
+              {
+                titulo: usuario.nombres,
+                usuario: usuario,
+            });
+          }
+        } else {
+          res.status(404).redirect('/404.html');
+        }
       }
     });
   } else {
@@ -215,31 +269,33 @@ exports.edit = function(req, res){
       req.params.id == req.session.usuario_actual._id) {
 
 
-    usuarios.findById(req.params.id, function(usuario){
-      if (usuario) {
+    usuarios.findById(req.params.id, function(err, usuario){
+      if (err){
+        console.log(err);
         if(req.is('json')){
-          res.send({
-            url: '/usuarios/' + req.params.id + '/edit',
-            usuario: usuario
-          });
+          res.send(500,{error: 'Hubo un error con la base de datos'});
         } else {
-          res.render('usuariosEdit', 
-            {
-              titulo: 'Editar ' + usuario.nombres,
-              usuario: usuario,
-              error: {}
-          });
+          req.session.messages['error'] = 'Hubo un error con la base de datos';
+          res.redirect('/dashboard');
         }
       } else {
-        res.status(404).redirect('/404.html');
-      }
-    }, function(err){
-      console.log(err);
-      if(req.is('json')){
-        res.send(500,{error: 'Hubo un error con la base de datos'});
-      } else {
-        req.session.messages['error'] = 'Hubo un error con la base de datos';
-        res.redirect('/dashboard');
+        if (usuario) {
+          if(req.is('json')){
+            res.send({
+              url: '/usuarios/' + req.params.id + '/edit',
+              usuario: usuario
+            });
+          } else {
+            res.render('usuariosEdit', 
+              {
+                titulo: 'Editar ' + usuario.nombres,
+                usuario: usuario,
+                error: {}
+            });
+          }
+        } else {
+          res.status(404).redirect('/404.html');
+        }
       }
     });
 
@@ -317,39 +373,40 @@ exports.update = function(req, res){
         (req.params.id == req.session.usuario_actual._id &&
           !(req.body.usuario.permisos))) {
 
-      usuarios.update(req.params.id, req.body.usuario, function(usuario){
-
-        if (usuario){
-          if (usuario._id == req.session.usuario_actual._id){
-            req.session.usuario_actual = usuario;
-
-          }
-          if(req.is('json')){
-            res.send({
-              usuario: usuario
-            });
+      usuarios.update(req.params.id, req.body.usuario, function(err, usuario){
+        if(err){
+          if(err.errors){
+            if(req.is('json')){
+              res.send(400,{
+                error: err.errors,
+                usuario: req.body.usuario
+              });
+            } else {
+              res.render('usuariosEdit', {
+                titulo: 'Editar ' + usuario.nombres,
+                error: err.errors,
+                usuario: usuario
+              });
+            }
           } else {
-            res.redirect('/usuarios/' + usuario._id);
+            res.status(500).redirect('/500.html');
           }
         } else {
-          res.status(404).redirect('/404.html');
-        }
-      }, function(err){
-        if(err.errors){
-          if(req.is('json')){
-            res.send(400,{
-              error: err.errors,
-              usuario: req.body.usuario
-            });
+          if (usuario){
+            if (usuario._id == req.session.usuario_actual._id){
+              req.session.usuario_actual = usuario;
+
+            }
+            if(req.is('json')){
+              res.send({
+                usuario: usuario
+              });
+            } else {
+              res.redirect('/usuarios/' + usuario._id);
+            }
           } else {
-            res.render('usuariosEdit', {
-              titulo: 'Editar ' + req.body.usuario.nombres,
-              error: err.errors,
-              usuario: req.body.usuario
-            });
+            res.status(404).redirect('/404.html');
           }
-        } else {
-          res.status(500).redirect('/500.html');
         }
       });
     } else {
@@ -429,13 +486,15 @@ exports.destroy = function(req, res){
 };
 
 exports.gravatar = function (req, res){
-  usuarios.findById(req.params.id,function(doc){
-    if (doc) {
-      res.redirect(301,gravatar(doc.email,req.query.size));
+  usuarios.findById(req.params.id,function(err, doc){
+    if(err) {
+      res.send(500,{error: 'Hubo un error con la base de datos'});
     } else {
-      res.status(404).redirect('/404.html');
+      if (doc) {
+        res.redirect(301,gravatar(doc.email,req.query.size));
+      } else {
+        res.status(404).redirect('/404.html');
+      }
     }
-  },function(err){
-    res.send(500,{error: 'Hubo un error con la base de datos'});
   });
 };

@@ -28,7 +28,8 @@
       <div>
         Número de documento: <%= usuario.documento %>
       </div>
-      <% if (usuario_actual.permisos.indexOf('usuarios') > -1) { %>
+      <% if (usuario_actual.permisos.indexOf('usuarios') > -1 &&
+         usuario.permisos.length > 0) { %>
         <div>
           Permisos: <%= usuario.permisos.join(',') %>
         </div>
@@ -40,6 +41,14 @@
       <div>
         <h2>Otra info</h2>
       </div>
+      <div>
+        Miembro desde: <%= moment().toString(usuario.createdAt) %>
+      </div>
+      <% if (usuario.lastLogin) { %>
+        <div>
+          Último inicio de sesión <%= moment(usuario.lastLogin).fromNow() %>
+        </div>
+      <% } %>
     </section>
   </div>
 </div>

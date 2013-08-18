@@ -19,6 +19,8 @@ var app = express();
 app.engine('ejs', engine);
 
 app.locals.formularios = formularios;
+app.locals.moment = require('moment');
+app.locals.moment.lang('es');
 app.set('port', process.env.PORT || 30602);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');

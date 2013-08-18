@@ -410,3 +410,6 @@ div.boton-agregar {
 .btn-xs{  
   box-shadow: 3px 3px 2px #888;
 }
+.form-control{
+  height:inherit;
+}

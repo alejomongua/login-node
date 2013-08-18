@@ -20,6 +20,19 @@
               validaciones: 'noVacio email'
             }
           }) %>
+        <%- formularios.campo('usuario', 'password', 'password', usuario, error, {
+            label: 'Contraseña',
+            data: {
+              validaciones:'noVacio password'
+            }
+          }) %>
+        <%- formularios.campo('usuario', 'password_confirm', 'password', usuario, error, {
+            label: 'Confirmar contraseña',
+            data: {
+              validaciones:'noVacio password_confirm'
+            }
+          }) %>
+
         <%- formularios.campo('usuario', 'tipo_id', 'seleccion', usuario, error, {
             label: 'Tipo de documento',
             input_class: 'chosen-select',
@@ -48,9 +61,6 @@
               input_class: 'chosen-select',
               opciones: {
                 usuarios: 'Administrar usuarios',
-                otro: '4',
-                otro_mas: '5',
-                suarios: 'usuarios'
               },
               data: {
                 placeholder: 'Seleccione los permisos'

@@ -80,7 +80,9 @@ mongoose.connect(dbHost, dbName);
           type : String,
         //  required: true,
           validate: [validadores.notBlank, 'no debe estar en blanco']
-        }
+        },
+        createdAt: Date,
+        lastLogin: Date
       });
 
       // Validacion de password
@@ -126,6 +128,9 @@ mongoose.connect(dbHost, dbName);
 
       // Antes de guardar, genera un token aleatorio
       _schema.pre('save', function (next) {
+        if(!this.createdAt){
+          this.createdAt = Date.now();
+        }
         this.remember_token = crypt.token();
         next();
       });
@@ -145,30 +150,28 @@ mongoose.connect(dbHost, dbName);
         });
       };
 
-      _update = function(id, usuario, success, fail){
-        _findById(id, function(doc){
+      _update = function(id, usuario, callback){
+        _findById(id, function(err, doc){
           if(doc){
             for(key in usuario){
               doc[key] = usuario[key];
             }
             doc.save(function(error){
               if(error){
-                fail(error);
+                callback(error,doc);
               } else {
-                var usuario = doc.toJSON();
+                var usu = doc.toJSON();
 
-                delete usuario['password_digest'];
-                delete usuario['remember_token'];
-                delete usuario['fecha_token'];
-                delete usuario['token'];
-                success(usuario);
+                delete usu['password_digest'];
+                delete usu['remember_token'];
+                delete usu['fecha_token'];
+                delete usu['token'];
+                callback(null,usu);
               }
             });
           } else {
-            success();
+            callback(err);
           }
-        }, function(err){
-          fail(err);
         });
       }
       _findByRememberToken = function (rt, success, fail) {
@@ -193,18 +196,8 @@ mongoose.connect(dbHost, dbName);
       };
 
       // Encontrar por ID
-      _findById = function (id, success, fail) {
-        _model.findOne({'_id': id}).exec(function(err, doc) {
-          if(err){
-            fail(err);
-          } else {
-            if (doc){
-              success(doc);
-            } else {
-              success();
-            }
-          }
-        });
+      _findById = function (id, callback) {
+        _model.findOne({'_id': id}).exec(callback);
       };
 
       return {

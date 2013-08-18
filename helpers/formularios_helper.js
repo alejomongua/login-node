@@ -94,6 +94,12 @@ formularios.campo = function(recurso, nombreDelCampo, tipo, valores, errores, op
               ' name="' + recurso + '[' + nombreDelCampo + ']"' + '>' +
               opciones + '</select>';
       break;
+    case 'checkbox':
+      input = '<input id="' + recurso + '_' + nombreDelCampo + '"' +
+                    ' class="form-control' + input_class + '"' +
+                    ' name="' + recurso + '[' + nombreDelCampo + ']"' +
+                    ' size="30" type="checkbox"' + valor + data + '>';
+      break;
     default:
       input = '';
       break;
