@@ -83,6 +83,8 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.be.equal(200);
         Object.keys(body).should.include('usuario');
+        Object.keys(body.usuario).should.not.include('password_digest');
+        Object.keys(body.usuario).should.not.include('remember_token');
         done();
       });
     });
@@ -103,6 +105,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -123,6 +129,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -144,6 +154,8 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.be.equal(200);
         Object.keys(body).should.include('usuario');
+        Object.keys(body.usuario).should.not.include('password_digest');
+        Object.keys(body.usuario).should.not.include('remember_token');
         done();
       });
     });
@@ -164,6 +176,8 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.be.equal(200);
         Object.keys(body).should.include('usuario');
+        Object.keys(body.usuario).should.not.include('password_digest');
+        Object.keys(body.usuario).should.not.include('remember_token');
         done();
       });
     });
@@ -184,6 +198,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -225,6 +243,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -245,6 +267,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -274,6 +300,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -299,6 +329,8 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.be.equal(200);
         Object.keys(body).should.include('usuario');
+        Object.keys(body.usuario).should.not.include('password_digest');
+        Object.keys(body.usuario).should.not.include('remember_token');
         done();
       });
     });
@@ -324,6 +356,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -348,6 +384,10 @@ describe("Usuarios", function(){
       }, function (err, res, body) {
         if (err) throw("This shouldn't happen");
         res.statusCode.should.be.not.equal(200);
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -373,6 +413,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -398,6 +442,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -422,6 +470,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -447,6 +499,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -468,6 +524,10 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.not.be.equal(200);
         Object.keys(body).should.include('error');
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
@@ -484,6 +544,8 @@ describe("Usuarios", function(){
         if (err) throw("This shouldn't happen");
         res.statusCode.should.be.equal(200);
         Object.keys(body).should.include('usuario');
+        Object.keys(body.usuario).should.not.include('password_digest');
+        Object.keys(body.usuario).should.not.include('remember_token');
         done();
       });
     });
@@ -499,6 +561,10 @@ describe("Usuarios", function(){
       }, function (err, res, body) {
         if (err) throw("This shouldn't happen");
         res.statusCode.should.be.not.equal(200);
+        if(body.usuario){
+          Object.keys(body.usuario).should.not.include('password_digest');
+          Object.keys(body.usuario).should.not.include('remember_token');
+        }
         done();
       });
     });
