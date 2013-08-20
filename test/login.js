@@ -27,6 +27,7 @@ describe("Usuarios", function(){
         nombres: 'Luis Alejandro',
         apellidos: 'Mongua Lopez',
         password: 'foobar',
+        password_confirm: 'foobar',
         documento: '1032369640'
       }, function(err, usuario){
         currentUser = usuario;

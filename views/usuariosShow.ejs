@@ -1,14 +1,14 @@
 <% layout('layout') -%>
 <% block('navbar', partial('_navbar', {usuario_actual: usuario_actual})) %>
 <div class="row">
-  <div class="col-lg-4 col-md-6 col-xs-12">
+  <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
     <section>
       <div class="img-thumbnail">
         <img src="/usuarios/<%= usuario._id %>/gravatar?size=200" />
       </div>
     </section>
   </div>
-  <div class="col-lg-4 col-md-6 col-xs-12">
+  <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
     <section>
       <h2>Información básica</h2>
       <div>
@@ -36,7 +36,7 @@
       <% } %>
     </section>
   </div>
-  <div class="col-lg-4 col-md-12 col-xs-12">
+  <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
     <section>
       <div>
         <h2>Otra info</h2>
@@ -48,6 +48,18 @@
         <div>
           Último inicio de sesión <%= moment(usuario.lastLogin).fromNow() %>
         </div>
+      <% } %>
+    </section>
+  </div>
+    <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+    <section>
+      <a href="<%= '/usuarios/' + usuarios[__i]._id + '/edit' %>" class="btn btn-primary btn-xs">
+        <i class="icon-edit"></i> Editar
+      </a>
+      <% if (usuarios[__i]._id != usuario_actual._id) { %>
+        <a href="<%= '/usuarios/' + usuarios[__i]._id + '?_method=DELETE' %>" class="btn btn-danger btn-xs eliminar-elemento">
+          <i class="icon-trash"></i> Eliminar
+        </a>
       <% } %>
     </section>
   </div>

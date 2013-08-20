@@ -31,6 +31,7 @@ describe('Usuarios', function(){
       nombres: 'Jaimito',
       apellidos: 'Gomez',
       password: 'foobar',
+      password_confirm: 'foobar',
       documento: '900399908'
     }, function(err, usuario){
       anotherUser = usuario;
@@ -45,6 +46,7 @@ describe('Usuarios', function(){
       nombres: 'Luis Alejandro',
       apellidos: 'Mongua Lopez',
       password: 'foobar',
+      password_confirm: 'foobar',
       documento: '1032369640'
     }, function(err, usuario){
       currentUser = usuario;
@@ -181,6 +183,7 @@ describe('Usuarios', function(){
         nombres: 'Pepito',
         apellidos: 'Perez',
         password: 'foobar',
+        password_confirm: 'foobar',
         documento: '1023863935',
         permisos: ['usuarios']
       }, function(err, usuario){
@@ -289,6 +292,7 @@ describe('Usuarios', function(){
             nombres: 'Prueba ' + i,
             apellidos: 'Prueba',
             password: 'foobar',
+            password_confirm: 'foobar',
             documento: 90039990 + i
           }, function(err, usuario){
             done();
