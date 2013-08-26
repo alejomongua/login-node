@@ -1,3 +1,4 @@
+@import url(//fonts.googleapis.com/css?family=Telex);
 /*!
  * Bootstrap v3.0.0
  *
@@ -442,9 +443,12 @@ h6,
 .h4,
 .h5,
 .h6 {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-weight: 500;
-  line-height: 1.1;
+  margin: 10px 0;
+  font-family: 'Telex', sans-serif;
+  font-weight: bold;
+  line-height: 20px;
+  color: #317eac;
+  text-rendering: optimizelegibility;
 }
 
 h1 small,
@@ -467,8 +471,7 @@ h6 small,
 h1,
 h2,
 h3 {
-  margin-top: 20px;
-  margin-bottom: 10px;
+  line-height: 40px;
 }
 
 h4,
@@ -1889,7 +1892,7 @@ textarea.input-lg {
 .btn {
   display: inline-block;
   padding: 6px 12px;
-  margin-bottom: 0;
+  margin-bottom: 1em;
   font-size: 14px;
   font-weight: bold;
   line-height: 1.428571429;
@@ -3225,13 +3228,14 @@ button.close {
 }
 
 .navbar-brand {
+  font-family: "Telex", "Helvetica Neue", Helvetica, Arial, sans-serif;;
   float: left;
   padding-top: 15px;
   padding-bottom: 15px;
   margin-right: 7.5px;
   font-size: 18px;
   line-height: 20px;
-  color: #777777;
+  color: #EEE;
 }
 
 .navbar-brand:hover,
@@ -3285,13 +3289,13 @@ button.close {
   padding-top: 10px;
   padding-bottom: 10px;
   line-height: 20px;
-  color: #777777;
+  color: #DDD;
 }
 
 .navbar-nav > li > a:hover,
 .navbar-nav > li > a:focus {
-  color: #333333;
-  background-color: transparent;
+  color: #FFF;
+  background-image: url('/images/bg2.png');
 }
 
 .navbar-nav > .active > a,
@@ -3429,8 +3433,7 @@ button.close {
 .navbar-nav > .open > a,
 .navbar-nav > .open > a:hover,
 .navbar-nav > .open > a:focus {
-  color: #555555;
-  background-color: #e7e7e7;
+  color: #EEE;
 }
 
 .navbar-nav > .open > a .caret,

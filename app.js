@@ -4,17 +4,18 @@
  */
 
 var express = require('express')
-  , paginasEstaticasController = require('./controllers/paginasEstaticasController')
-  , sesionesController = require('./controllers/sesionesController')
-  , usuariosController = require('./controllers/usuariosController')
-  , sesion_helper = require('./helpers/sesion_helper')
   , http = require('http')
+  , request = require('request')
   , engine = require('ejs-locals')
   , path = require('path')
   , formularios = require('./helpers/formularios_helper');
 
 var app = express();
-
+var host = process.env.HOST || 'localhost';
+var protocol = process.env.PROTOCOL || 'http';
+var isEmpty = function(obj) {
+  return Object.keys(obj).length === 0;
+};
 // all environments
 app.engine('ejs', engine);
 
@@ -43,40 +44,28 @@ app.use(function (req, res, next) {
   }
   next();
 });
+
 app.use(express.cookieParser('TY2axQh43LnwAgkH'));
 app.use(express.session());
 
-
-app.use(function(req, res, next){
-  if (!req.is('json')){
-    //Verifique que la variable de mensajes exista
-    if (typeof req.session.messages === 'undefined') req.session.messages = {};
+// Verificar si es usuario logueado
+app.use(function (req, res, next) {
+  if(!req.session.usuario_actual){
+    request.get(protocol + '://' + host + '/api/sesiones', function(error, response, body){
+      try{
+        req.session.usuario_actual = JSON.parse(body);
+      } catch (e) {
+        req.session.usuario_actual = null;
+      } finally {
+        app.locals.usuario_actual = req.session.usuario_actual;
+        console.log(req.session.usuario_actual)
+        next();
+      }
+    });
+  } else {
+    console.log('no hay usuario')
+    next();
   }
-  // Logea al usuario si existe la cookie
-  sesion_helper.identificar_con_cookie(req, function(err){
-    if (err){
-      console.log(err);
-      res.clearCookie('remember_token');
-      next();
-    } else {
-      next();
-    }
-  });
-});
-// Agrega las url para las que no se necesita estar autenticado
-var urlsQueNoRequirenAutenticacion = [
-  '/',
-  '/olvide_password',
-  '/sesiones',
-  '/recuperar_password'
-];
-app.use(sesion_helper.autorizacion(urlsQueNoRequirenAutenticacion));
-
-// Agrege siempre el flash y el usuario actual
-app.use(function(req, res, next) {
-  res.locals.flash = req.session.messages;
-  res.locals.usuario_actual = req.session.usuario_actual;
-  next();
 });
 
 // El middleware referente a peticiones tiene que ir antes de esta
@@ -92,27 +81,49 @@ if ('development' == app.get('env')) {
 
 // Routes:
 // Paginas estaticas:
-app.get('/', paginasEstaticasController.index);
-app.get('/olvide_password', paginasEstaticasController.olvidePassword);
-app.get('/dashboard', paginasEstaticasController.dashboard);
-app.post('/olvide_password', paginasEstaticasController.enviarCorreo);
+app.all('*', function(req,res){
+  // El replace es para quitar el slash al final si lo hay
+  var url = protocol + '://' +  host + '/api' + req._parsedUrl.pathname.replace(/\/$/,'');
+  var options = {
+    method: req.method,
+    url: url
+  };
+  if(!isEmpty(req.body)){
+    options.body =  JSON.stringify(req.body);
+  }
+  console.log(options)
+  request(options, function(error, response, body){
+    if(error){
+      res.render('common/500'); // Mostrar página de error 500
+    } else {
+      if(response.statusCode == 404){
+        res.render('common/404'); // Cambiar por mostrar pagina de 404
+      } else if(response.statusCode >= 500){
+        res.render('common/500', {error: 'Se recibio error'}); // Mostrar página de error 500
+      } else {
+        if (body){
+          try{
+            var cuerpo =JSON.parse(body);
+          } catch (e){
+            res.render('common/500', {error: 'Formato de body incorrecto'}); // Mostrar página de error 500
+          }
+          if (cuerpo.url){
+            res.redirect(cuerpo.url);
+          } else if (cuerpo.template){
+            res.render(cuerpo.template, cuerpo);
+          } else {
+            res.render('common/500', {error: 'No hay template ni url'}); // Mostrar página de error 500
+          }
+        } else {
+          res.render('common/500', {error: 'No hay body'}); // Mostrar página de error 500
+         }
+      }
+    }
+  });
+});
 
-// Sesiones
-app.post('/sesiones', sesionesController.create);
-app.delete('/sesiones', sesionesController.destroy);
-
-// Usuarios
-app.get('/recuperar_password', usuariosController.recuperarPassword);
-app.get('/usuarios/:id/modificar_password', usuariosController.modificarPassword);
-app.get('/usuarios', usuariosController.index);
-app.get('/usuarios/new', usuariosController.new);
-app.get('/usuarios/:id', usuariosController.show);
-app.get('/usuarios/:id/edit', usuariosController.edit);
-app.put('/usuarios/:id', usuariosController.update);
-app.post('/usuarios', usuariosController.create);
-app.delete('/usuarios/:id', usuariosController.destroy);
-app.get('/usuarios/:id/gravatar', usuariosController.gravatar);
-
+// ejecute el servidor de apis
+var api = require('./api/app');
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });

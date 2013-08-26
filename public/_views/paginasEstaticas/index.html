@@ -1,0 +1,20 @@
+<% layout('../layout') -%>
+<div class="row">
+  <div class="col-lg-offset-2 col-md-offset-1 col-xs-12 col-md-10 col-sm-10 col-lg-8">
+    <form accept-charset="UTF-8" action="/sesiones" method="post">
+        <%- formularios.campo('sesion', 'email', 'texto') %>
+        <%- formularios.campo('sesion', 'password', 'password') %>
+        <%- formularios.campo('sesion', 'recuerdame', 'checkbox') %>
+        <div class="row">
+          <div class="col-lg-offset-2 col-md-offset-3 col-sm-offset-3 col-lg-4 col-md-5 col-sm-5 col-xs-12 text-center">
+            <h4><a href="/olvide_password">¿Olvidó su contraseña?</a></h4>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-lg-offset-2 col-md-offset-3 col-sm-offset-3 col-lg-4 col-md-5 col-sm-5 col-xs-12 text-center">
+            <button class="btn btn-large btn-info btn-block" type="submit">Ingresar</button>
+          </div>
+        </div>
+    </form>
+  </div>
+</div> 

@@ -20,6 +20,7 @@
     "request":"*",
     "zombie":"*",
     "moment":"*",
-    "express-helpers": "*"
+    "express-helpers": "*",
+    "express-namespace": "*"
   }
 }
