@@ -5,13 +5,24 @@ var sesion = require('../helpers/sesion_helper');
  */
 exports.create = function(req, res){
   if (typeof req.body.sesion === 'undefined') {
-    res.send(400,{'error': 'No se recibieron datos'});
+    res.send(400,{
+      error: 'No se recibieron datos',
+      url: '/'
+    });
   } else {
-    sesion.identificar(req, res, function(err, u){ // success
+    sesion.identificar(req, res, function(err, u){ 
       if (err){                        // fail
-        res.send(400, {error: err});
-      } else {
-        res.send({'usuario': u, 'url': '/dashboard'});
+        console.log('***********error')
+        console.log(err)
+        res.send(400, {
+          error: err,
+          url: '/'
+        });
+      } else {                          // success
+        res.send({
+          usuario: u,
+          url: '/dashboard'
+        });
       }
     });
   }

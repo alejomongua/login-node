@@ -50,6 +50,10 @@ app.use(express.session());
 
 // Verificar si es usuario logueado
 app.use(function (req, res, next) {
+  if(typeof req.session.mensajes === 'undefined') {
+    req.session.mensajes = {};
+  }
+  app.locals.flash = req.session.mensajes;
   if(!req.session.usuario_actual){
     request.get(protocol + '://' + host + '/api/sesiones', function(error, response, body){
       try{
@@ -86,37 +90,43 @@ app.all('*', function(req,res){
   var url = protocol + '://' +  host + '/api' + req._parsedUrl.pathname.replace(/\/$/,'');
   var options = {
     method: req.method,
-    url: url
+    url: url,
+    json: true
   };
   if(!isEmpty(req.body)){
-    options.body =  JSON.stringify(req.body);
+    options.body =  req.body;
   }
-  console.log(options)
   request(options, function(error, response, body){
+    if (body){
+      if (body.error){
+        req.session.mensajes['error'] = body.error;
+      } 
+    } else {
+      req.session.mensajes['error'] = 'Respuesta vacia';
+      res.status(500).render('common/500'); // Mostrar página de error 500
+      return;
+    }
+
     if(error){
-      res.render('common/500'); // Mostrar página de error 500
+      req.session.mensajes.error = error;
+      res.status(500).render('common/500'); // Mostrar página de error 500
     } else {
       if(response.statusCode == 404){
-        res.render('common/404'); // Cambiar por mostrar pagina de 404
+        res.status(404).render('common/404'); // Cambiar por mostrar pagina de 404
       } else if(response.statusCode >= 500){
-        res.render('common/500', {error: 'Se recibio error'}); // Mostrar página de error 500
+        req.session.mensajes.error = 'Ocurrió un error en el servidor';
+        res.status(response.statusCode).render('common/500'); // Mostrar página de error 500
       } else {
-        if (body){
-          try{
-            var cuerpo =JSON.parse(body);
-          } catch (e){
-            res.render('common/500', {error: 'Formato de body incorrecto'}); // Mostrar página de error 500
-          }
-          if (cuerpo.url){
-            res.redirect(cuerpo.url);
-          } else if (cuerpo.template){
-            res.render(cuerpo.template, cuerpo);
-          } else {
-            res.render('common/500', {error: 'No hay template ni url'}); // Mostrar página de error 500
-          }
+        if (body.url){
+          res.redirect(body.url);
+        } else if (body.template){
+          res.render(body.template, body);
         } else {
-          res.render('common/500', {error: 'No hay body'}); // Mostrar página de error 500
-         }
+          console.log('******** body ***********')
+          console.log(body)
+          req.session.mensajes.error = 'No se pudo resolver la petición';
+          res.status(500).render('common/500'); // Mostrar página de error 500
+        }
       }
     }
   });

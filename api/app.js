@@ -23,6 +23,8 @@ app.use(express.cookieParser('TY2axQh43LnwAgkH'));
 app.use(express.session());
 
 app.use(function(req, res, next){
+  console.log('***********************************************')
+  console.log(req.body)
   // Logea al usuario si existe la cookie
   sesion_helper.identificar_con_cookie(req, function(err){
     if (err){

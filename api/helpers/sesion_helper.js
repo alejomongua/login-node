@@ -1,6 +1,5 @@
 var usuarios = require('./db_helper').usuarios;
 var crypt = require('./crypt_helper');
-//var _ = require('cloneextend');
 
 exports.identificar_con_cookie = function (req, callback) {
   if (typeof req.session.usuario_actual === 'undefined' &&
@@ -89,7 +88,6 @@ exports.autorizacion = function(allowedURLs, defaultURL, basename) {
       } else {
         requestedURL = req._parsedUrl.pathname.replace(basename, '');
       }
-      console.log('requested ' + requestedURL)
     }
     if (typeof req.session.usuario_actual === 'undefined' && allowedURLs.indexOf(requestedURL) < 0){
       res.send(302, {
