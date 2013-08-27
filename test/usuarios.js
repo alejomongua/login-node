@@ -1,6 +1,6 @@
 var http = require('request'),
     usuarios,
-    url = 'http://localhost';
+    url = 'http://localhost/api';
 
 process.env.NODE_ENV = 'test';
 
@@ -20,7 +20,7 @@ describe("Usuarios", function(){
   });
   
   beforeEach(function(done){
-    usuarios = require("../helpers/db_helper").usuarios;
+    usuarios = require("../api/helpers/db_helper").usuarios;
     //add some test data    
     usuarios.model.create({
       email:'admin@example.com',
@@ -41,7 +41,7 @@ describe("Usuarios", function(){
   });
 
   beforeEach(function(done){
-    usuarios = require("../helpers/db_helper").usuarios;
+    usuarios = require("../api/helpers/db_helper").usuarios;
     //add some test data    
     usuarios.model.create({
       email:'alejom.tv@gmail.com',
@@ -80,6 +80,7 @@ describe("Usuarios", function(){
           }
         }
       }, function (err, res, body) {
+        console.log(body)
         if (err) throw("This shouldn't happen");
         res.statusCode.should.be.equal(200);
         Object.keys(body).should.include('usuario');

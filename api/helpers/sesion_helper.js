@@ -4,9 +4,13 @@ var crypt = require('./crypt_helper');
 exports.identificar_con_cookie = function (req, callback) {
   if (typeof req.session.usuario_actual === 'undefined' &&
     typeof req.cookies.remember_token !== 'undefined'){
-    usuarios.findByRememberToken(req.cookies.remember_token, function(u){
-      req.session.usuario_actual = u;
-      callback();
+    usuarios.findByRememberToken(req.cookies.remember_token, function(err, u){
+      if (err){
+        callback(err)
+      } else {
+        req.session.usuario_actual = u;
+        callback();
+      }
     }, function(err){
       callback(err);
     });
@@ -39,9 +43,9 @@ exports.identificar = function (req, res, callback) {
 
                 if (typeof req.body.sesion.recordar !== "undefined"){
                   // Queda almacenada la cookie por aproximadamente 3 años
-                  res.cookie('remember_token', remember_token, {expires: new Date(Date.now() + 1e11)});  
+                  res.cookie('remember_token', remember_token, {expires: new Date(Date.now() + 1e11), signed: true});  
                 } else {
-                  res.cookie('remember_token', remember_token);
+                  res.cookie('remember_token', remember_token, {signed: true});
                 }
                 req.session.usuario_actual = u;
 

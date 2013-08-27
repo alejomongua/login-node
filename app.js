@@ -55,19 +55,41 @@ app.use(function (req, res, next) {
   }
   app.locals.flash = req.session.mensajes;
   if(!req.session.usuario_actual){
-    request.get(protocol + '://' + host + '/api/sesiones', function(error, response, body){
-      try{
-        req.session.usuario_actual = JSON.parse(body);
-      } catch (e) {
-        req.session.usuario_actual = null;
-      } finally {
-        app.locals.usuario_actual = req.session.usuario_actual;
-        console.log(req.session.usuario_actual)
-        next();
-      }
-    });
+    // Lee la cookie para el servidor de apis
+    var COOKIE_SES_API_REGEX = /connect\.sid_api=([^;]*)/;
+    var cookieJar = request.jar();
+    if (COOKIE_SES_API_REGEX.test(req.headers.cookie)){
+      var cookie = 'connect.sid_api=' + COOKIE_SES_API_REGEX.exec(req.headers.cookie)[1];
+      cookieJar.add(request.cookie(cookie));
+      request.get({
+        url: protocol + '://' + host + '/api/sesiones',
+        json: true,
+        jar: cookieJar,
+      }, function(error, response, body){
+        if(body){
+          console.log(body)
+          try{
+            req.session.usuario_actual = JSON.parse(body);
+          } catch (e) {
+            req.session.usuario_actual = null;
+          } finally {
+            app.locals.usuario_actual = req.session.usuario_actual;
+            next();
+          }
+        } else {
+          req.session.usuario_actual = null;
+          app.locals.usuario_actual = req.session.usuario_actual;
+          next();
+        }
+      });
+    } else {
+      req.session.usuario_actual = null;
+      app.locals.usuario_actual = req.session.usuario_actual;
+      next();
+    }
+    
   } else {
-    console.log('no hay usuario')
+    console.log(app.locals.usuario_actual)
     next();
   }
 });
@@ -86,9 +108,17 @@ if ('development' == app.get('env')) {
 // Routes:
 // Paginas estaticas:
 app.all('*', function(req,res){
+  // Lee la cookie para el servidor de apis
+  var COOKIE_SES_API_REGEX = /connect\.sid_api=([^;]*)/;
+  var cookieJar = request.jar();
+  if (COOKIE_SES_API_REGEX.test(req.headers.cookie)){
+    var cookie = 'connect.sid_api=' + COOKIE_SES_API_REGEX.exec(req.headers.cookie)[1];
+    cookieJar.add(request.cookie(cookie));
+  }
   // El replace es para quitar el slash al final si lo hay
   var url = protocol + '://' +  host + '/api' + req._parsedUrl.pathname.replace(/\/$/,'');
   var options = {
+    jar: cookieJar,
     method: req.method,
     url: url,
     json: true
@@ -97,16 +127,6 @@ app.all('*', function(req,res){
     options.body =  req.body;
   }
   request(options, function(error, response, body){
-    if (body){
-      if (body.error){
-        req.session.mensajes['error'] = body.error;
-      } 
-    } else {
-      req.session.mensajes['error'] = 'Respuesta vacia';
-      res.status(500).render('common/500'); // Mostrar página de error 500
-      return;
-    }
-
     if(error){
       req.session.mensajes.error = error;
       res.status(500).render('common/500'); // Mostrar página de error 500
@@ -117,16 +137,26 @@ app.all('*', function(req,res){
         req.session.mensajes.error = 'Ocurrió un error en el servidor';
         res.status(response.statusCode).render('common/500'); // Mostrar página de error 500
       } else {
-        if (body.url){
-          res.redirect(body.url);
-        } else if (body.template){
-          res.render(body.template, body);
+        if (body){
+          if (body.error){
+            req.session.mensajes.error = body.error;
+          }
+          if (body.url){
+            res.redirect(body.url);
+          } else if (body.template){
+            res.render(body.template, body);
+          } else {
+            console.log('******** body ***********')
+            console.log(body)
+            req.session.mensajes.error = 'No se pudo resolver la petición';
+            res.status(500).render('common/500'); // Mostrar página de error 500
+          }
         } else {
-          console.log('******** body ***********')
-          console.log(body)
-          req.session.mensajes.error = 'No se pudo resolver la petición';
+          req.session.mensajes['error'] = 'Respuesta vacia';
           res.status(500).render('common/500'); // Mostrar página de error 500
+          return;
         }
+          
       }
     }
   });

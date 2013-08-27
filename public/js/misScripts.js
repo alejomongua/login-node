@@ -141,59 +141,6 @@ asp.navegarA = function(destination, options){
   });
 };
 
-/* facebook */
-asp.FB = {};
-
-asp.FB.updateStatusCallback = function(response){
-  asp.FB.response = response;
-  if (response.status === 'connected') {
-    FB.api('/me', function(data){
-      if(!data.error){
-        if (asp.FB.accion === 'registrar') {
-          var usuario = {
-            nombre: data.name,
-            nick: data.username,
-            email: data.email,
-            signed_request: response.authResponse.signedRequest,
-            ciudad: data.location.name.split(',')[0],
-            facebookUID: response.authResponse.userID
-          }
-          $.ajax({
-            url: '/usuarios',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({usuario:usuario}),
-            success: asp.login,
-            error: function(data){
-              console.log(data);
-            },
-          });
-        } else {
-          var datos = {
-            email: data.email,
-            signed_request: response.authResponse.signedRequest,
-            facebookUID: response.authResponse.userID
-          };
-          $.ajax({
-            url: '/sesiones',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({sesion:datos}),
-            success: asp.login,
-            error: function(data){
-              console.log(data);
-            },
-          });
-        }
-      }
-    });
-  } else if (response.status === 'not_authorized') {
-    console.log(response);
-  } else {
-    console.log(response);
-  }
-}
-
 /* formularios */
 
 asp.formularios = {};
@@ -344,10 +291,6 @@ asp.inicializar = function($){
         if($(this).attr('data-accion') === 'cerrar-sesion'){
           asp.logout();
           return false;
-        } else if(($(this).attr('data-accion') === 'registrar') || ($(this).attr('data-accion') === 'ingresar')){
-          asp.FB.accion = $(this).attr('data-accion');
-          FB.login(asp.FB.updateStatusCallback, {scope: "email"});
-          return false;
         } else if($(this).attr('data-remote')){
           asp.navegarA(this.href, opciones);
           return false;
@@ -359,20 +302,10 @@ asp.inicializar = function($){
   }
   // Cargue el usuario actual
   $.ajax({
-    url: '/sesiones',
+    url: '/api/sesiones',
     success: function(u){
       asp.usuario_actual = u;
     }
-  });
-  // Cargue la librería de FB
-  $.ajaxSetup({ cache: true });
-  $.getScript('//connect.facebook.net/en_US/all.js', function(){
-    FB.init({
-      appId      : '400616776704742', // App ID
-      channelUrl : '//localhost/channel', // Channel File
-      cookie     : true, // enable cookies to allow the server to access the session
-    });
-    //FB.Event.subscribe('auth.authResponseChange', asp.FB.updateStatusCallback);
   });
   // Ligar eventos a elementos
   $(document).on('click', '.eliminar-elemento', function(){

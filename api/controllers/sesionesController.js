@@ -12,8 +12,6 @@ exports.create = function(req, res){
   } else {
     sesion.identificar(req, res, function(err, u){ 
       if (err){                        // fail
-        console.log('***********error')
-        console.log(err)
         res.send(400, {
           error: err,
           url: '/'

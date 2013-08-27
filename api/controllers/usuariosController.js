@@ -270,13 +270,12 @@ exports.create = function(req, res){
  */
 exports.update = function(req, res){
   // Verifique que se hallan recibido datos
-  if (req.body.usuario && req.params.id) {
+  if (req.body.usuario && req.params.id && req.session.usuario_actual) {
     // Verifique que: Sea administrador, o que sea el mismo usuario y no
     // se esté intentando modificar los permisos
     if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1 ||
         (req.params.id == req.session.usuario_actual._id &&
           !(req.body.usuario.permisos))) {
-
       usuarios.update(req.params.id, req.body.usuario, function(err, usuario){
         if(err){
           if(err.errors){
