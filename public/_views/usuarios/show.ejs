@@ -1,10 +1,8 @@
-<% layout('layout') -%>
-<% block('navbar', partial('_navbar', {usuario_actual: usuario_actual})) %>
 <div class="row">
   <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
     <section>
       <div class="img-thumbnail">
-        <img src="/usuarios/<%= usuario._id %>/gravatar?size=200" />
+        <img src="/api/usuarios/<%- usuario._id %>/gravatar?size=200" />
       </div>
     </section>
   </div>
@@ -12,26 +10,26 @@
     <section>
       <h2>Información básica</h2>
       <div>
-        Nombres: <%= usuario.nombres %>
+        Nombres: <%- usuario.nombres %>
       </div>
       <div>
-        Apellidos: <%= usuario.apellidos %>
+        Apellidos: <%- usuario.apellidos %>
       </div>
       <div>
-        Correo electrónico: <%= usuario.email %>
+        Correo electrónico: <%- usuario.email %>
       </div>
       <% if (usuario.tipo_id) { %>
       <div>
-        Tipo de identificación: <%= usuario.tipo_id %>
+        Tipo de identificación: <%- usuario.tipo_id %>
       </div>
       <% } %>
       <div>
-        Número de documento: <%= usuario.documento %>
+        Número de documento: <%- usuario.documento %>
       </div>
       <% if (usuario_actual.permisos.indexOf('usuarios') > -1 &&
          usuario.permisos.length > 0) { %>
         <div>
-          Permisos: <%= usuario.permisos.join(',') %>
+          Permisos: <%- usuario.permisos.join(',') %>
         </div>
       <% } %>
     </section>
@@ -42,22 +40,22 @@
         <h2>Otra info</h2>
       </div>
       <div>
-        Miembro desde: <%= moment().toString(usuario.createdAt) %>
+        Miembro desde: <%- moment().toString(usuario.createdAt) %>
       </div>
       <% if (usuario.lastLogin) { %>
         <div>
-          Último inicio de sesión <%= moment(usuario.lastLogin).fromNow() %>
+          Último inicio de sesión <%- moment(usuario.lastLogin).fromNow() %>
         </div>
       <% } %>
     </section>
   </div>
     <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
     <section>
-      <a href="<%= '/usuarios/' + usuarios[__i]._id + '/edit' %>" class="btn btn-primary btn-xs">
+      <a href="<%- '/usuarios/' + usuario._id + '/edit' %>" class="btn btn-primary btn-xs">
         <i class="icon-edit"></i> Editar
       </a>
-      <% if (usuarios[__i]._id != usuario_actual._id) { %>
-        <a href="<%= '/usuarios/' + usuarios[__i]._id + '?_method=DELETE' %>" class="btn btn-danger btn-xs eliminar-elemento">
+      <% if (usuario._id != usuario_actual._id) { %>
+        <a href="<%- '/usuarios/' + usuario._id + '?_method=DELETE' %>" class="btn btn-danger btn-xs eliminar-elemento">
           <i class="icon-trash"></i> Eliminar
         </a>
       <% } %>

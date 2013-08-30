@@ -34,7 +34,7 @@ asp.logout = function(){
       asp.navegarA('/', {operacion: 'replace'});
       delete asp.usuario_actual;
     },
-    error: function(){
+    error: function(err, resp){
       /*$.pnotify({
         title: 'Error',
         text: resp.responseText,
@@ -97,7 +97,7 @@ asp.navegarA = function(destination, options){
   }
   $('#flash').html('');
   $.ajax({
-    url: destination,
+    url: '/api' + destination,
     type: method,
     contentType: 'application/json',
     success: function(context){
@@ -130,13 +130,8 @@ asp.navegarA = function(destination, options){
         $("body").addClass("historypushed");
       }
     },
-    error: function(err){
+    error: function(err, resp){
       console.log(err);
-      $.pnotify({
-        title: "Error",
-        text: resp.responseText,
-        type: 'error'
-      });
     }
   });
 };
@@ -292,7 +287,7 @@ asp.inicializar = function($){
           asp.logout();
           return false;
         } else if($(this).attr('data-remote')){
-          asp.navegarA(this.href, opciones);
+          asp.navegarA($(this).attr('href'), opciones);
           return false;
         }
       } else {

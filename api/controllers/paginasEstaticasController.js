@@ -4,7 +4,7 @@
 exports.index = function(req, res){
   if (req.session.usuario_actual) {
     res.send(302, {
-      error: "No autorizado (1)",
+      error: "Ya está logueado",
       url: '/dashboard'
     });
   } else {

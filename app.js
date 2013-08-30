@@ -55,6 +55,8 @@ app.use(function (req, res, next) {
   }
   app.locals.flash = req.session.mensajes;
   if(!req.session.usuario_actual){
+    // Inicializa en blanco para no tener un error en la plantilla
+    app.locals.usuario_actual = null;
     // Lee la cookie para el servidor de apis
     var COOKIE_SES_API_REGEX = /connect\.sid_api=([^;]*)/;
     var cookieJar = request.jar();
@@ -62,34 +64,25 @@ app.use(function (req, res, next) {
       var cookie = 'connect.sid_api=' + COOKIE_SES_API_REGEX.exec(req.headers.cookie)[1];
       cookieJar.add(request.cookie(cookie));
       request.get({
-        url: protocol + '://' + host + '/api/sesiones',
+        url: 'http://localhost:30601/api/sesiones',
         json: true,
         jar: cookieJar,
       }, function(error, response, body){
         if(body){
-          console.log(body)
-          try{
-            req.session.usuario_actual = JSON.parse(body);
-          } catch (e) {
-            req.session.usuario_actual = null;
-          } finally {
-            app.locals.usuario_actual = req.session.usuario_actual;
-            next();
-          }
+          req.session.usuario_actual = body;
+          app.locals.usuario_actual = req.session.usuario_actual;
+          next();
         } else {
           req.session.usuario_actual = null;
-          app.locals.usuario_actual = req.session.usuario_actual;
           next();
         }
       });
     } else {
       req.session.usuario_actual = null;
-      app.locals.usuario_actual = req.session.usuario_actual;
       next();
-    }
-    
+    }    
   } else {
-    console.log(app.locals.usuario_actual)
+    app.locals.usuario_actual = req.session.usuario_actual;
     next();
   }
 });
@@ -116,7 +109,7 @@ app.all('*', function(req,res){
     cookieJar.add(request.cookie(cookie));
   }
   // El replace es para quitar el slash al final si lo hay
-  var url = protocol + '://' +  host + '/api' + req._parsedUrl.pathname.replace(/\/$/,'');
+  var url = 'http://localhost:30601/api' + req._parsedUrl.pathname.replace(/\/$/,'');
   var options = {
     jar: cookieJar,
     method: req.method,
@@ -146,8 +139,6 @@ app.all('*', function(req,res){
           } else if (body.template){
             res.render(body.template, body);
           } else {
-            console.log('******** body ***********')
-            console.log(body)
             req.session.mensajes.error = 'No se pudo resolver la petición';
             res.status(500).render('common/500'); // Mostrar página de error 500
           }

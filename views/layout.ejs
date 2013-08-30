@@ -69,10 +69,12 @@
           </div>
           <![endif]-->
         </div>
-        <% if(typeof titulo === 'string') { %>
-          <h1 class="titulo"><%= titulo %></h1>
-        <% } %>
-        <%- body -%>
+        <div id="main-content">
+          <% if(typeof titulo === 'string') { %>
+            <h1 class="titulo"><%= titulo %></h1>
+          <% } %>
+          <%- body -%>
+        </div>
       </section>
       <hr>
       <footer>

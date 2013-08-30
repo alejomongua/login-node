@@ -9,8 +9,8 @@
       label: 'Correo electrónico'
     },
   }) %>
-<% layout('layout') -%>
-<% block('navbar', partial('_navbar', {usuario_actual: usuario_actual})) %>
+<% layout('../layout') -%>
+
 <%-partial('_usuariosForm', {
   usuario_actual: usuario_actual,
   usuario: usuario,
