@@ -4,13 +4,15 @@
 exports.index = function(req, res){
   if (req.session.usuario_actual) {
     res.send(302, {
-      error: "Ya está logueado",
-      url: '/dashboard'
+      mensaje: {
+        error: "Ya está logueado"
+      },
+      url: '/dashboard',
+      template: 'paginasEstaticas/dashboard'
     });
   } else {
     res.send({
-      template: 'paginasEstaticas/index',
-      titulo: 'Identifíquese'
+      template: 'paginasEstaticas/index'
     });
   }
 };
@@ -21,8 +23,11 @@ exports.index = function(req, res){
 exports.olvidePassword = function(req, res){
   if (req.session.usuario_actual) {
     res.send(302, {
-      error: "No autorizado",
-      url: '/dashboard'
+      mensaje: {
+        error: "No autorizado"
+      },
+      url: '/dashboard',
+      template: 'paginasEstaticas/dashboard'
     });
   } else {
     res.send({
@@ -50,8 +55,11 @@ exports.enviarCorreo = function(req, res){
 
   if (req.session.usuario_actual) {
     res.send(302, {
-      error: "No permitido, el usuario está logueado",
-      url: '/dashboard'
+      mensaje: {
+        error: "No permitido, el usuario está logueado"
+      },
+      url: '/dashboard',
+      template: 'paginasEstaticas/dashboard'
     });
   } else {
     if (typeof req.body.email !== 'undefined') {
@@ -60,7 +68,10 @@ exports.enviarCorreo = function(req, res){
           console.log(err);
           res.send(302, {
             url: '/',
-            error: 'Hubo un error (2)'
+            template: 'paginasEstaticas/index',
+            mensaje: {
+              error: 'Hubo un error (2)'
+            }
           });
         } else {
           var crypt = require('../helpers/crypt_helper'),
@@ -76,7 +87,10 @@ exports.enviarCorreo = function(req, res){
                 console.log(err);
                 res.send(302, {
                   url: '/',
-                  error: 'Hubo un error (1)'
+                  template: 'paginasEstaticas/index',
+                  mensaje: {
+                    error: 'Hubo un error (1)'
+                  }
                 });
               } else {
                 // enviar correo
@@ -121,12 +135,15 @@ exports.enviarCorreo = function(req, res){
                     console.log(error);
                     res.send(302, {
                       url: '/',
-                      error: "Hubo un error enviando el correo"
+                      template: 'paginasEstaticas/index',
+                      mensaje: {
+                        error: "Hubo un error enviando el correo"
+                      }
                     });
                   }else{
-                    req.session.messages['success'] = 
                     res.send({
                       url: '/',
+                      template: 'paginasEstaticas/index',
                       mensaje: 'Correo enviado a ' + doc.email
                     });
                   }
@@ -134,10 +151,12 @@ exports.enviarCorreo = function(req, res){
               }
             });
           } else {
-            req.session.messages['error'] = 
             res.send(302, {
               url: '/',
-              error: 'No se encontró el correo ' + req.body.email
+              template: 'paginasEstaticas/index',
+              mensaje: {
+                error: 'No se encontró el correo ' + req.body.email
+              }
             });
           }
         }
@@ -145,7 +164,10 @@ exports.enviarCorreo = function(req, res){
     } else {
       res.send(302, {
         url: '/',
-        error: 'No se recibieron datos'
+        template: 'paginasEstaticas/index',
+        mensaje: {
+          error: 'No se recibieron datos'
+        }
       });
     };
   }

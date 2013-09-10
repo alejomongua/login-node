@@ -1,18 +1,81 @@
-<% formularios.errores(flash, error, {
-    password_confirm: {
-      label: 'Confirmación de contraseña'
-    },
-    password: {
-      label: 'Contraseña'
-    },
-    email: {
-      label: 'Correo electrónico'
-    },
-  }) %>
-<% layout('../layout') -%>
-<% block('navbar', partial('_navbar', {usuario_actual: usuario_actual})) %>
-<%-partial('_usuariosForm', {
-  usuario_actual: usuario_actual,
-  usuario: usuario,
-  error: error
-  }) %>
+<% if(typeof titulo === 'string') { %>
+  <h1 class="titulo"><%- titulo %></h1>
+<% } %>
+<div class="row">
+  <div class="col-lg-offset-2 col-md-offset-1 col-xs-12 col-md-10 col-sm-10 col-lg-8">
+    <form accept-charset="UTF-8" action="/usuarios" method="post">
+        <%= myApplication.formularios.campo('usuario', 'nombres', 'texto', usuario, error, {
+            data: {
+              validaciones: 'noVacio'
+            }
+          }) %>
+        <%= myApplication.formularios.campo('usuario', 'apellidos', 'texto', usuario, error, {
+            data: {
+              validaciones: 'noVacio'
+            }
+          }) %>
+        <%= myApplication.formularios.campo('usuario', 'email', 'texto', usuario, error, {
+            data: {
+              validaciones: 'noVacio email'
+            }
+          }) %>
+        <%= myApplication.formularios.campo('usuario', 'password', 'password', usuario, error, {
+            label: 'Contraseña',
+            data: {
+              validaciones:'noVacio password'
+            }
+          }) %>
+        <%= myApplication.formularios.campo('usuario', 'password_confirm', 'password', usuario, error, {
+            label: 'Confirmar contraseña',
+            data: {
+              validaciones:'noVacio password_confirm'
+            }
+          }) %>
+
+        <%= myApplication.formularios.campo('usuario', 'tipo_id', 'seleccion', usuario, error, {
+            label: 'Tipo de documento',
+            input_class: 'chosen-select',
+            opciones: {
+              C: 'Cédula de ciudadanía',
+              N: 'NIT',
+              X: 'NN',
+              P: 'Pasaporte',
+              E: 'Cédula de extrangería',
+              T: 'Tarjeta de identidad',
+              U: 'NUIP',
+              D: 'Carné diplomático'
+            },
+            data: {
+              placeholder: 'Seleccione un tipo de documento'
+            }
+          }) %>
+        <%= myApplication.formularios.campo('usuario', 'documento', 'texto', usuario, error, {
+            data: {
+              validaciones:'noVacio'
+            }
+          }) %>
+        <% if (myApplication.usuario_actual.permisos.indexOf('usuarios') > -1) { %>
+          <%= myApplication.formularios.campo('usuario', 'permisos', 'seleccion', usuario, error, {
+              multiple: 'true',
+              input_class: 'chosen-select',
+              opciones: {
+                usuarios: 'Administrar usuarios',
+              },
+              data: {
+                placeholder: 'Seleccione los permisos'
+              }
+            }) %>
+        <% } %>
+        <div class="row">
+          <div class="col-lg-4 col-md-5 col-sm-5 col-xs-6 text-center">
+            <button class="btn btn-large btn-success btn-block" type="submit" data-remote="true"><i class="icon-check-sign"></i> Guardar</button>
+          </div>
+          <div class="col-lg-4 col-md-5 col-sm-5 col-xs-6 text-center">
+            <a class="btn btn-large btn-danger btn-block" href="/usuarios" data-remote="true">
+              <i class="icon-remove-sign"></i> Cancelar
+            </a>
+          </div>
+        </div>
+    </form>
+  </div>
+</div>

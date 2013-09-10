@@ -1,7 +1,55 @@
-var asp = {};
+(function($) {
+  return $.fn.serializeObject = function() {
+    var json, patterns, push_counters,
+      _this = this;
+    json = {};
+    push_counters = {};
+    patterns = {
+      validate: /^[a-zA-Z][a-zA-Z0-9_]*(?:\[(?:\d*|[a-zA-Z0-9_]+)\])*$/,
+      key: /[a-zA-Z0-9_]+|(?=\[\])/g,
+      push: /^$/,
+      fixed: /^\d+$/,
+      named: /^[a-zA-Z0-9_]+$/
+    };
+    this.build = function(base, key, value) {
+      base[key] = value;
+      return base;
+    };
+    this.push_counter = function(key) {
+      if (push_counters[key] === void 0) {
+        push_counters[key] = 0;
+      }
+      return push_counters[key]++;
+    };
+    $.each($(this).serializeArray(), function(i, elem) {
+      var k, keys, merge, re, reverse_key;
+      if (!patterns.validate.test(elem.name)) {
+        return;
+      }
+      keys = elem.name.match(patterns.key);
+      merge = elem.value;
+      reverse_key = elem.name;
+      while ((k = keys.pop()) !== void 0) {
+        if (patterns.push.test(k)) {
+          re = new RegExp("\\[" + k + "\\]$");
+          reverse_key = reverse_key.replace(re, '');
+          merge = _this.build([], _this.push_counter(reverse_key), merge);
+        } else if (patterns.fixed.test(k)) {
+          merge = _this.build([], k, merge);
+        } else if (patterns.named.test(k)) {
+          merge = _this.build({}, k, merge);
+        }
+      }
+      return json = $.extend(true, json, merge);
+    });
+    return json;
+  };
+})(jQuery);
+
+var myApplication = {};
 
 /* utilidades */
-asp.capitalizeFirstLetter = function(string)
+myApplication.capitalizeFirstLetter = function(string)
 {
   if (typeof string === 'string'){
     return string.charAt(0).toUpperCase() + string.slice(1);
@@ -10,38 +58,20 @@ asp.capitalizeFirstLetter = function(string)
   }
 };
 
-asp.isEmpty = function(obj) {
+myApplication.isEmpty = function(obj) {
   return Object.keys(obj).length === 0;
 };
 
 /* sesion */
-asp.login = function(usuario){
-  asp.usuario_actual = usuario;
-  asp.renderTemplate('sesiones/menu_usuario', $('#menu-usuario'), {usuario_actual: asp.usuario_actual});
-  asp.navegarA('/dashboard', {operacion: 'replace'});
+myApplication.login = function(usuario){
+  myApplication.usuario_actual = usuario;
+  myApplication.renderTemplate('common/menu_usuario', $('#menu-usuario'), {usuario_actual: myApplication.usuario_actual});
+  myApplication.navegarA('/dashboard', {operacion: 'replace'});
 };
 
-asp.logout = function(){
-  $.ajax({
-    url: '/sesiones',
-    type: 'DELETE',
-    contentType: 'application/json',
-    success: function(data){
-      /*$.pnotify({
-        title: 'Sesión finalizada'
-      });*/
-      asp.renderTemplate('sesiones/menu_usuario', $('#menu-usuario'), {usuario_actual: false});
-      asp.navegarA('/', {operacion: 'replace'});
-      delete asp.usuario_actual;
-    },
-    error: function(err, resp){
-      /*$.pnotify({
-        title: 'Error',
-        text: resp.responseText,
-        type: 'error'
-      });*/
-    }
-  });
+myApplication.logout = function(){
+      myApplication.renderTemplate('common/menu_usuario', $('#menu-usuario'), {usuario_actual: false});
+      delete myApplication.usuario_actual;
 };
 
 /* plantillas */
@@ -55,16 +85,17 @@ asp.logout = function(){
  *    append: añade el resultado al contenido de 'dest'
  *    prepend: pone el resultado antes del contenido de 'dest'
  */
-asp.renderTemplate = function(template, dest, context, options){
+myApplication.renderTemplate = function(template, dest, context, options){
   var posicion = 'replace';
+  var url = '/_views/' + template + '.html';
   if (options){
     if(options.position){
       posicion = options.position;
     }
   }
   $.ajax({
-    url: '/_views/' + template + '.html',
-    success: function(data){
+    url: url,
+    success: function(data, b, c){
       var result = _.template(data, context);
       switch(posicion){
         case 'append':
@@ -81,11 +112,50 @@ asp.renderTemplate = function(template, dest, context, options){
   });
 };
 
-asp.navegarA = function(destination, options){
+myApplication.navegarA = function(destination, options, data){
   var operacion = 'push';
   var method = 'get';
+  var contenedorPrincipal = $('#main-content');
+  var navegarAjax = function(context){
+    var t;
+    var d = destination;
+    var tit = 'Aplicacion';
+    if(context){
+      if(context.mensaje){
+        myApplication.flash(context.mensaje);
+      }
+      if(context.logout){
+        myApplication.logout();
+      } else if(context.login){
+        myApplication.login(context.login);
+      }
+      if (context.template) {
+        t = context.template;
+      }
+      if (context.url) {
+        d = context.url;
+      }
+      if (context.titulo){
+        tit = context.titulo + ' | ' + tit;
+      }
+    }
+    $('title').html(tit);
+    myApplication.renderTemplate(t, contenedorPrincipal, context, options)
+    if (operacion === 'replace'){
+      history.replaceState({
+        url: d,
+        template: t
+      }, null, d);
+    }else if (operacion === 'push'){
+      history.pushState({
+        url: d,
+        template: t
+      }, null, d);
+      $("body").addClass("historypushed");
+    }
+  }
   
-  $('#main-content').html('<div class="text-center"><img src="/images/ajax-loader.gif" title="cargando" alt="cargando" /></div>');
+  contenedorPrincipal.html('<div class="text-center"><img src="/images/ajax-loader.gif" title="cargando" alt="cargando" /></div>');
   
   if (options){
     if(options.operacion){
@@ -95,52 +165,46 @@ asp.navegarA = function(destination, options){
       method = options.method;
     }
   }
-  $('#flash').html('');
+  if (data){
+    data = JSON.stringify(data);
+  }
+  myApplication.flash(); // Borra los mensajes en el flash
   $.ajax({
     url: '/api' + destination,
     type: method,
+    data: data,
     contentType: 'application/json',
     success: function(context){
-      var t;
-      var d = destination;
-      var tit = 'A Su Puerta';
-      if(context){
-        if (context.template) {
-          t = context.template;
-        }
-        if (context.url) {
-          d = context.url;
-        }
-        if (context.titulo){
-          tit = context.titulo + ' | ' + tit;
-        }
-      }
-      $('title').html(tit);
-      asp.renderTemplate(t, $('#main-content'), context, options)
-      if (operacion === 'replace'){
-        history.replaceState({
-          url: d,
-          template: t
-        }, null, d);
-      }else if (operacion === 'push'){
-        history.pushState({
-          url: d,
-          template: t
-        }, null, d);
-        $("body").addClass("historypushed");
-      }
+      navegarAjax(context);
     },
-    error: function(err, resp){
+    error: function(err){
+      var context = err.responseJSON;      
+      if(err.status === 404){
+        myApplication.renderTemplate('common/404', contenedorPrincipal);
+      } else if (context) {
+        navegarAjax(context);
+      } else {
+        myApplication.renderTemplate('common/500', contenedorPrincipal);
+      }
       console.log(err);
     }
   });
 };
 
+myApplication.flash = function(mensaje){
+  var flashTemplate = 'common/flash';
+  var flashDiv = $('#flash');
+  if (typeof mensaje !== 'object' || myApplication.isEmpty(mensaje)){
+    flashDiv.html('');
+  } else {
+    myApplication.renderTemplate(flashTemplate, flashDiv, {flash: mensaje});
+  }
+}
+
 /* formularios */
+myApplication.formularios = {};
 
-asp.formularios = {};
-
-asp.formularios.campo = function(recurso, nombreDelCampo, tipo, valores, errores, options){
+myApplication.formularios.campo = function(recurso, nombreDelCampo, tipo, valores, errores, options){
 /*
 <div class="row">
   <div class="col-xs-6 col-sm-6 col-md-5 col-lg-4">
@@ -153,7 +217,7 @@ asp.formularios.campo = function(recurso, nombreDelCampo, tipo, valores, errores
 */
   if (typeof valores === 'undefined') valores = {}
   if (typeof errores === 'undefined') errores = {}
-  var stringAMostrar = asp.capitalizeFirstLetter(nombreDelCampo);
+  var stringAMostrar = myApplication.capitalizeFirstLetter(nombreDelCampo);
   var data = '';
   var multiple = '';
   var opciones = '';
@@ -250,15 +314,15 @@ asp.formularios.campo = function(recurso, nombreDelCampo, tipo, valores, errores
   return output;
 };
 
-asp.formularios.errores = function(flash, errores, options){
+myApplication.formularios.errores = function(flash, errores, options){
   var mensaje, stringAMostrar;
   if(typeof errores === 'string'){
-    flash['error'] = errores;
-  } else if (!asp.isEmpty(errores)){
+    myApplication.flash({error: errores});
+  } else if (!myApplication.isEmpty(errores)){
     mensaje = 'Hay errores en el formulario' +
               '<ul>';
     for(error in errores){
-      stringAMostrar = asp.capitalizeFirstLetter(error);
+      stringAMostrar = myApplication.capitalizeFirstLetter(error);
       if (options && options[error]){
         if (options[error].label){
           stringAMostrar = options[error].label;
@@ -267,31 +331,48 @@ asp.formularios.errores = function(flash, errores, options){
       mensaje = mensaje + '<li>' + stringAMostrar + ' ' + errores[error].type + '</li>'
     }
     mensaje = mensaje + '</ul>';
-    flash['error'] =  mensaje;
+    myApplication.flash({error: mensaje});
   }  
 };
 
 /* Inicializacion */ 
-asp.inicializar = function($){
+myApplication.inicializar = function($){
   if(history && history.pushState){
+    // Navegacion ajax
     $(document).on('click', 'a', function(){
-      if(!$(this).hasClass('dropdown-toggle')){
+      var vinculo = $(this);
+      if(!vinculo.hasClass('dropdown-toggle')){
         $('.dropdown.open .dropdown-toggle').dropdown('toggle');
       }
-      if(!$(this).hasClass('active')){
-        $('a').removeClass('active');
-        $(this).addClass('active');
-        var opciones = {}
-        opciones.method = $(this).attr('data-method')
-        if($(this).attr('data-accion') === 'cerrar-sesion'){
-          asp.logout();
-          return false;
-        } else if($(this).attr('data-remote')){
-          asp.navegarA($(this).attr('href'), opciones);
+      if(!vinculo.hasClass('active')){
+        if(vinculo.attr('data-remote')){
+          $('a').removeClass('active');
+          vinculo.addClass('active');
+          var opciones = {}
+          opciones.method = vinculo.attr('data-method') || 'GET';
+          myApplication.navegarA(vinculo.attr('href'), opciones);
           return false;
         }
       } else {
         return false;
+      }
+    });
+
+    // Enviar formularios ajax
+    $(document).on('click', 'button', function(){
+      if($(this).attr('data-remote') && $(this).attr('data-formulario')){
+        var boton = $(this),
+            idForm = boton.attr('data-formulario'),
+            formulario = $('#' + idForm),
+            method, destination;
+        if(formulario.length > 0){
+          boton.attr('disabled','disabled');
+          destination = formulario.attr('action');
+          datos = formulario.serializeObject();
+          method = formulario.attr('data-method') || 'POST';
+          myApplication.navegarA(destination, {method: method}, datos);
+          return false;
+        }
       }
     });
   }
@@ -299,7 +380,7 @@ asp.inicializar = function($){
   $.ajax({
     url: '/api/sesiones',
     success: function(u){
-      asp.usuario_actual = u;
+      myApplication.usuario_actual = u;
     }
   });
   // Ligar eventos a elementos
@@ -311,11 +392,11 @@ asp.inicializar = function($){
   $(".chosen-select").chosen();
 };
 
-jQuery(document).ready(asp.inicializar);
+jQuery(document).ready(myApplication.inicializar);
 
 window.onpopstate = function(e){
   if(e.state && e.state.url){
-    asp.navegarA(e.state.url, {operacion: 'pop'});
+    myApplication.navegarA(e.state.url, {operacion: 'pop'});
     $("body").addClass("historypushed");
   } else {
     if ($("body").hasClass("historypushed")){

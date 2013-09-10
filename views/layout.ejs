@@ -2,11 +2,13 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Aplicacion<% if (typeof titulo !== 'undefined') { %><%= ' | ' + titulo %><% } %></title>
+    <title>Aplicacion<% if (typeof titulo === 'string') { %><%= ' | ' + titulo %><% } %></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <!--link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"-->
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
+    <!--link href="/css/font-awesome.min.css" rel="stylesheet"-->
     <link rel="stylesheet" href="/css/chosen.css">
     <link rel="stylesheet" href="/css/misestilos.css">
   </head>
@@ -42,7 +44,7 @@
                         <li><a href="/usuarios" data-remote="true">Administrar usuarios</a></li>
                       <% } %>
                       <li class="divider"></li>
-                      <li><a data-accion="cerrar-sesion" href="/sesiones?_method=DELETE">Cerrar sesión</a></li> 
+                      <li><a data-accion="cerrar-sesion" href="/sesiones?_method=DELETE" data-remote="true" data-method="DELETE">Cerrar sesión</a></li> 
                     </ul>
                   </li>
                 <% } %>
@@ -81,10 +83,14 @@
         Programado por Alejandro Mongua - <a href="mailto:alejandro.mongua@gmail.com"> alejandro.mongua@gmail.com </a>
       </footer>
     </div>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script>
+    <!--script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script-->
+    <script src="/js/jquery.min.js"></script>
+    <!--script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script-->
+    <script src="/js/bootstrap.min.js"></script>
+    <!--script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.1/underscore-min.js"></script-->
+    <script src="/js/underscore-min.js"></script>
+    <!--script src="//cdnjs.cloudflare.com/ajax/libs/backbone.js/1.0.0/backbone-min.js"></script-->
+    <script src="/js/backbone-min.js"></script>
     <script src="/js/jquery.pnotify.js"></script>
     <script src="/js/chosen.jquery.js"></script>
     <script src="/js/moment.min.js"></script>
@@ -93,5 +99,6 @@
       moment.lang('es');
     </script>
     <script src="/js/misScripts.js"></script>
+    <%- scripts -%>
   </body>
 </html>

@@ -2,14 +2,14 @@
 
 <div class="row boton-agregar">
   <div class="col-lg-6 col-md-6 col-xs-12">
-    <a class="btn btn-success btn-lg btn-block" href="/usuarios/new">
+    <a class="btn btn-success btn-lg btn-block" href="/usuarios/new" data-remote="true">
       <i class="icon-plus-sign"></i> Agregar nuevo usuario
     </a>
   </div>
-  <div class="col-lg-6 col-md-6 col-xs-12">
-    <%-partial('_paginacion', {
+  <div class="col-lg-6 col-md-6 col-xs-12 paginacion">
+    <%-partial('../common/_paginacion', {
       total: total,
-      pagina_actual: pagina_actual,
+      pagina_actual: pagina,
       por_pagina: 10,
       ruta: '/usuarios'
     })%>
@@ -21,17 +21,17 @@
     <div class="item-lista-usuario row">
       <div class="col-lg-7 col-7">
         <span class="item-lista">
-          <a href="/usuarios/<%= usuarios[__i]._id %>">
+          <a href="/usuarios/<%= usuarios[__i]._id %>"  data-remote="true">
             <%= usuarios[__i].nombres + ' ' + usuarios[__i].apellidos %>
           </a>
         </span>
       </div>
-      <div class="acciones-usuario acciones col-5 col-lg-5">
-        <a href="<%= '/usuarios/' + usuarios[__i]._id + '/edit' %>" class="btn btn-primary btn-xs">
+      <div class="acciones-usuario acciones col-lg-5">
+        <a href="<%= '/usuarios/' + usuarios[__i]._id + '/edit' %>" class="btn btn-primary btn-xs" data-remote="true">
           <i class="icon-edit"></i> Editar
         </a>
         <% if (usuarios[__i]._id != usuario_actual._id) { %>
-          <a href="<%= '/usuarios/' + usuarios[__i]._id + '?_method=DELETE' %>" class="btn btn-danger btn-xs eliminar-elemento">
+          <a href="<%= '/usuarios/' + usuarios[__i]._id + '?_method=DELETE' %>" class="btn btn-danger btn-xs eliminar-elemento" data-remote="true">
             <i class="icon-trash"></i> Eliminar
           </a>
         <% } %>
@@ -40,10 +40,10 @@
     <hr>
   <% } %>
 </div>
-<div class="col-lg-offset-6 col-md-offset-6 col-lg-6 col-md-6 col-xs-12">
-  <%-partial('_paginacion', {
+<div class="col-lg-offset-6 col-md-offset-6 col-lg-6 col-md-6 col-xs-12 paginacion">
+  <%-partial('../common/_paginacion', {
     total: total,
-    pagina_actual: pagina_actual,
+    pagina_actual: pagina,
     por_pagina: 10,
     ruta: '/usuarios'
   })%>

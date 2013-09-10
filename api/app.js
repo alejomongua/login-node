@@ -18,7 +18,6 @@ var app = express();
 app.set('port', process.env.PORT || 30601);
 app.use(express.logger('dev'));
 app.use(express.bodyParser());
-app.use(express.methodOverride());
 app.use(express.cookieParser('TY2axQh43LnwAgkH'));
 app.use(express.session({key: 'connect.sid_api'}));
 

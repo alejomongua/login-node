@@ -72,47 +72,57 @@ formularios.campo = function(recurso, nombreDelCampo, tipo, valores, errores, op
   }
   valor = valores[nombreDelCampo] ? ' value="' + valores[nombreDelCampo] + '"' : '';
 
-  var label = '<label class="control-label text-right" for="' + recurso + '_' + nombreDelCampo + '">' + 
-                stringAMostrar + '</label>';
   var input;
-  switch(tipo){
-    case 'texto':
-      input = '<input id="' + recurso + '_' + nombreDelCampo + '"' +
-                    ' class="form-control' + input_class + '"' +
-                    ' name="' + recurso + '[' + nombreDelCampo + ']"' +
-                    ' size="30" type="text"' + valor + data + '>';
-      break;
-    case 'password':
-      input = '<input id="' + recurso + '_' + nombreDelCampo + '"' +
-                    ' class="form-control' + input_class + '"' +
-                    ' name="' + recurso + '[' + nombreDelCampo + ']"' +
-                    ' size="30" type="password"' + valor + data + '>';
-      break;
-    case 'seleccion':
-      input = '<select id="' + recurso + '_' + nombreDelCampo + '"' +
-              ' class="form_control' + input_class + '"' + multiple + data +
-              ' name="' + recurso + '[' + nombreDelCampo + ']"' + '>' +
-              opciones + '</select>';
-      break;
-    case 'checkbox':
-      input = '<input id="' + recurso + '_' + nombreDelCampo + '"' +
-                    ' class="form-control' + input_class + '"' +
-                    ' name="' + recurso + '[' + nombreDelCampo + ']"' +
-                    ' size="30" type="checkbox"' + valor + data + '>';
-      break;
-    default:
-      input = '';
-      break;
+  if (tipo !== 'checkbox') {
+    label = '<label class="control-label text-right" for="' + recurso + '_' + nombreDelCampo + '">' + 
+                stringAMostrar + '</label>';
+    switch(tipo){
+      case 'texto':
+        input = '<input id="' + recurso + '_' + nombreDelCampo + '"' +
+                      ' class="form-control' + input_class + '"' +
+                      ' name="' + recurso + '[' + nombreDelCampo + ']"' +
+                      ' size="30" type="text"' + valor + data + '>';
+        break;
+      case 'password':
+        input = '<input id="' + recurso + '_' + nombreDelCampo + '"' +
+                      ' class="form-control' + input_class + '"' +
+                      ' name="' + recurso + '[' + nombreDelCampo + ']"' +
+                      ' size="30" type="password"' + valor + data + '>';
+        break;
+      case 'seleccion':
+        input = '<select id="' + recurso + '_' + nombreDelCampo + '"' +
+                ' class="form_control' + input_class + '"' + multiple + data +
+                ' name="' + recurso + '[' + nombreDelCampo + ']"' + '>' +
+                opciones + '</select>';
+        break;
+      default:
+        input = '';
+        break;
+    }
+
+    output = '<div class="' + clase + '">' +
+             '  <div class="col-xs-6 col-sm-6 col-md-5 col-lg-4">' +
+             label +
+             '  </div>' +
+             '  <div class="col-xs-6 col-sm-6 col-md-5 col-lg-4">' +
+             input +
+             '  </div>' +
+             '</div>';
+  } else {
+    input = '<input id="' + recurso + '_' + nombreDelCampo + '"' +
+                      ' class="form-control' + input_class + '"' +
+                      ' name="' + recurso + '[' + nombreDelCampo + ']"' +
+                      ' size="30" type="checkbox"' + valor + data + '>';
+
+    output = '<div class="row' + clase + '">' +
+             '  <div class="col-xs-6 col-sm-6 col-md-5 col-lg-4 text-right">' +
+             input +
+             '  </div>' +
+             '  <div class="col-xs-6 col-sm-6 col-md-5 col-lg-4">' +
+             stringAMostrar +
+             '  </div>' +
+             '</div>';
   }
-  
-  output = '<div class="' + clase + '">' +
-           '  <div class="col-xs-6 col-sm-6 col-md-5 col-lg-4">' +
-           label +
-           '  </div>' +
-           '  <div class="col-xs-6 col-sm-6 col-md-5 col-lg-4">' +
-           input +
-           '  </div>' +
-           '</div>';
 
   return output;
 };

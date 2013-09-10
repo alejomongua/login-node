@@ -16,7 +16,11 @@ exports.recuperarPassword = function(req, res){
     usuarios.findById(req.query.id,function(error, usuario){
       if (error){
         console.log(err);
-        res.send(500,{error: 'Hubo un error con la base de datos'});
+        res.send(500,{
+          mensaje: {
+            error: 'Hubo un error con la base de datos'
+          }
+        });
       } else {
         var u;
         var crypt = require('../helpers/crypt_helper');
@@ -40,7 +44,10 @@ exports.recuperarPassword = function(req, res){
               req.session.usuario_actual = u;
               res.send({
                 url: '/usuarios/' + usuario._id + '/modificar_password',
-                mensaje: 'Asigne una nueva contraseña'
+                template: 'usuarios/modificarPassword',
+                mensaje: {
+                  success: 'Asigne una nueva contraseña'
+                }
               });
             }
           });
@@ -66,15 +73,17 @@ exports.modificarPassword = function(req, res){
       if (err){
         console.log(err);
         res.send(500,{
-          error: 'Hubo un error con la base de datos'
+          mensaje: {
+            error: 'Hubo un error con la base de datos'
+          }
         });
       } else {
         if (usuario) {
           res.send({
-            url: '/usuarios/' + req.params.id + '/modificar_password',
             titulo: 'Modificar contraseña',
-            template: 'usuariosModificar/Password', 
-            usuario: usuario
+            template: 'usuarios/modificarPassword', 
+            usuario: usuario,
+            error: {}
           });
         } else {
           res.send(404);
@@ -84,7 +93,10 @@ exports.modificarPassword = function(req, res){
   } else {
     res.send(403,{
       url: '/dashboard',
-      error: 'No autorizado'
+      template: 'paginasEstaticas/dashboard',
+      mensaje: {
+        error: 'No autorizado'
+      }
     });
   }
 };
@@ -104,7 +116,11 @@ exports.index = function(req, res){
       // Retorna con errores en caso de haber alguno
       if (err){
         console.log(err);
-        res.send(500,{error: 'Hubo un error en la base de datos'});
+        res.send(500,{
+          mensaje: {
+            error: 'Hubo un error en la base de datos'
+          }
+        });
       } else {
         cantidad_usuarios = count;
         // Verifica que página están solicitando
@@ -118,11 +134,14 @@ exports.index = function(req, res){
           // Retorna con errores en caso de haber alguno
           if (err){
             console.log(err);
-            res.send(500,{error: 'Hubo un error en la base de datos'});
+            res.send(500,{
+              mensaje: {
+                error: 'Hubo un error en la base de datos'
+              }  
+            });
           } else {
             // Retorna con el dato solicitado
             res.send({
-              url: '/usuarios',
               template: 'usuarios/index',
               titulo: 'Administrar usuarios',
               usuarios: users,
@@ -137,7 +156,10 @@ exports.index = function(req, res){
     // Redirige en caso de no tener autorización
     res.send(403, {
       url: '/dashboard',
-      error: 'No autorizado'
+      template: 'paginasEstaticas/dashboard',
+      mensaje: {
+        error: 'No autorizado'
+      }
     });
   }
 };
@@ -149,12 +171,16 @@ exports.new = function(req, res){
   if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1) {
     res.send({
       template: 'usuarios/New',
-      titulo: 'Crear nuevo usuario'
+      titulo: 'Crear nuevo usuario',
+      error: {}
     });
   } else {
     res.send(403, {
       url: '/dashboard',
-      error: 'No autorizado'
+      template: 'paginasEstaticas/dashboard',
+      mensaje: {
+        error: 'No autorizado'
+      }
     });
   }
 };
@@ -169,7 +195,11 @@ exports.show = function(req, res){
     usuarios.findById(req.params.id, function(err, usuario){
       if (err){
         console.log(err);
-        res.send(500,{error: 'Hubo un error con la base de datos'});
+        res.send(500,{
+          mensaje: {
+            error: 'Hubo un error con la base de datos'
+          }
+        });
       } else {
         if (usuario) {
           res.send({
@@ -185,7 +215,10 @@ exports.show = function(req, res){
   } else {
     res.send(403,{
       url: '/dashboard',
-      error: 'No autorizado'
+      template: 'paginasEstaticas/dashboard',
+      mensaje: {
+        error: 'No autorizado'
+      }
     });
   }
 };
@@ -198,18 +231,21 @@ exports.edit = function(req, res){
   if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1 ||
       req.params.id == req.session.usuario_actual._id) {
 
-
     usuarios.findById(req.params.id, function(err, usuario){
       if (err){
         console.log(err);
-        res.send(500,{error: 'Hubo un error con la base de datos'});
+        res.send(500,{
+          mensaje: {
+            error: 'Hubo un error en la base de datos'
+          }
+        });
       } else {
         if (usuario) {
           res.send({
-            url: '/usuarios/' + req.params.id + '/edit',
             titulo: 'Editar ' + usuario.nombres,
             template: 'usuarios/edit',
-            usuario: usuario
+            usuario: usuario,
+            error: {}
           });
         } else {
           res.send(404)
@@ -220,7 +256,10 @@ exports.edit = function(req, res){
   } else {
     res.send(403, {
       url: '/dashboard',
-      error: 'No autorizado'
+      template: 'paginasEstaticas/dashboard',
+      mensaje: {
+        error: 'No autorizado'
+      }
     });
   }
 };
@@ -237,11 +276,16 @@ exports.create = function(req, res){
         if(err.errors){
           res.send(302, {
             url: '/usuarios/new',
+            template: 'usuarios/new',
             error: err.errors,
             usuario: req.body.usuario
           });
         } else {
-          res.send(500,{error: 'Hubo un error con la base de datos'});
+          res.send(500,{
+          mensaje: {
+            error: 'Hubo un error en la base de datos'
+          }
+        });
         }
       } else {
         var usuario = doc.toJSON();
@@ -253,6 +297,7 @@ exports.create = function(req, res){
 
         res.send({
           url: '/usuarios/' + usuario._id,
+          template: 'usuarios/show',
           usuario: usuario
         });
       }
@@ -260,7 +305,10 @@ exports.create = function(req, res){
   } else {
     res.send(403, {
       url: '/dashboard',
-      error: 'No autorizado'
+      template: 'paginasEstaticas/dashboard',
+      mensaje: {
+        error: 'No autorizado'
+      }
     });
   }
 };
@@ -280,12 +328,16 @@ exports.update = function(req, res){
         if(err){
           if(err.errors){
             res.send(302, {
-              url: '/usuarios/' + req.params.id + '/edit',
+              template: 'usuarios/edit',
               error: err.errors,
               usuario: req.body.usuario
             });
           } else {
-            res.send(500,{error: 'Hubo un error con la base de datos'});
+            res.send(500,{
+              mensaje: {
+                error: 'Hubo un error en la base de datos'
+              }
+            });
           }
         } else {
           if (usuario){
@@ -293,12 +345,14 @@ exports.update = function(req, res){
               req.session.usuario_actual = usuario;
               res.send({
                 url: '/usuarios/' + usuario._id,
+                template: 'usuarios/show',
                 usuario: usuario,
                 usuario_actual: usuario
               });
             } else {
               res.send({
                 url: '/usuarios/' + usuario._id,
+                template: 'usuarios/show',
                 usuario: usuario
               });
             }
@@ -310,11 +364,18 @@ exports.update = function(req, res){
     } else {
       res.send(403, {
         url: '/dashboard',
-        error: 'No autorizado'
+        template: 'paginasEstaticas/dashboard',
+        mensaje: {
+          error: 'No autorizado'
+        }
       });
     }
   } else {
-    res.send(400,{error: 'No se recibieron datos'});
+    res.send(400,{
+      mensaje: {
+        error: 'No se recibieron datos'
+      }
+    });
   }
 };
 
@@ -331,7 +392,11 @@ exports.destroy = function(req, res){
         .exec(function (err, doc) {
         if (err) {
           console.log(err);
-          res.send(500,{error: 'Hubo un error en la base de datos'});
+          res.send(500,{
+            mensaje: {
+              error: 'Hubo un error en la base de datos'
+            }
+          });
         } else {
           if (doc) {
             var usuario = doc.toJSON();
@@ -347,21 +412,32 @@ exports.destroy = function(req, res){
     } else {
       res.send(403, {
         url: '/dashboard',
-        error: 'No autorizado'
+        template: 'paginasEstaticas/dashboard',
+        mensaje: {
+          error: 'No autorizado'
+        }
       });
     }
   }  else {
-    res.send(400,{error: 'No se recibieron datos'});
+    res.send(400,{
+      mensaje: {
+        error: 'No se recibieron datos'
+      }
+    });
   }
 };
 
 exports.gravatar = function (req, res){
   usuarios.findById(req.params.id,function(err, doc){
     if(err) {
-      res.send(500,{error: 'Hubo un error con la base de datos'});
+      res.send(500,{
+        mensaje: {
+          error: 'Hubo un error en la base de datos'
+        }
+      });
     } else {
       if (doc) {
-        res.redirect(301,gravatar(doc.email,req.query.size));
+        res.send(301,{url:gravatar(doc.email,req.query.size)});
       } else {
         res.send(404)
       }

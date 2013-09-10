@@ -4,22 +4,30 @@ var sesion = require('../helpers/sesion_helper');
  * POST sesiones
  */
 exports.create = function(req, res){
+  //debugger;
   if (typeof req.body.sesion === 'undefined') {
     res.send(400,{
-      error: 'No se recibieron datos',
+      mensaje: {
+        error: 'No se recibieron datos'
+      },
+      template: 'paginasEstaticas/index',
       url: '/'
     });
   } else {
     sesion.identificar(req, res, function(err, u){ 
       if (err){                        // fail
         res.send(400, {
-          error: err,
+          mensaje: {
+            error: err
+          },
+          template: 'paginasEstaticas/index',
           url: '/'
         });
       } else {                          // success
         res.send({
-          usuario: u,
-          url: '/dashboard'
+          url: '/dashboard',
+          template: 'paginasEstaticas/dashboard',
+          login: u
         });
       }
     });
@@ -33,7 +41,14 @@ exports.destroy = function(req, res){
   delete req.session.usuario_actual;
   res.clearCookie('remember_token');
   
-  res.send({mensaje: "Sesion terminada"});
+  res.send({
+    url: '/',
+    template: 'paginasEstaticas/index',
+    mensaje: {
+      success: "Sesion terminada"
+    },
+    logout: true
+  });
 };
 
 /*

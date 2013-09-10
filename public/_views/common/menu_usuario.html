@@ -1,0 +1,20 @@
+<% if (myApplication.usuario_actual) { %>
+  <li><a href="#"><i class="icon-question-sign"></i> Ayuda</a></li>
+  <li class="dropdown">
+    <a id="menu-usuario" href="#" class="dropdown-toggle" data-toggle="dropdown">
+      <%- myApplication.usuario_actual.nombres %>
+      <b class="caret"></b>
+    </a>
+    <ul class="dropdown-menu">
+      <li><a href="/usuarios/<%- myApplication.usuario_actual._id %>" data-remote="true">Ver mi perfil</a></li>
+      <li><a href="/usuarios/<%- myApplication.usuario_actual._id %>/edit" data-remote="true">Editar mi perfil</a></li>
+      <li><a href="/usuarios/<%- myApplication.usuario_actual._id %>/modificar_password" data-remote="true">Modificar mi contraseña</a></li>
+      <% if (myApplication.usuario_actual.permisos.indexOf('usuarios') > -1) { %>
+        <li class="divider"></li>
+        <li><a href="/usuarios" data-remote="true">Administrar usuarios</a></li>
+      <% } %>
+      <li class="divider"></li>
+      <li><a data-accion="cerrar-sesion" href="/sesiones?_method=DELETE" data-remote="true" data-method="DELETE">Cerrar sesión</a></li> 
+    </ul>
+  </li>
+<% } %>

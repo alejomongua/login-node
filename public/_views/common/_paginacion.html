@@ -3,16 +3,16 @@
 <% if (total_paginas > 1) { %>
 
   <% if (pagina !== 1) { %>
-  <a href="<%= ruta %>?pagina=1" class="btn btn-xs btn-info"><i class="icon-fast-backward" data-remote="true"></i> Primera</a>
-  <a href="<%= ruta %>?pagina=<%= pagina - 1 %>" class="btn btn-xs btn-info"><i class="icon-step-backward" data-remote="true"></i> Anterior</a>
+  <a href="<%- ruta %>?pagina=1" class="btn btn-xs btn-info"><i class="icon-fast-backward" data-remote="true"></i> Primera</a>
+  <a href="<%- ruta %>?pagina=<%- pagina - 1 %>" class="btn btn-xs btn-info"><i class="icon-step-backward" data-remote="true"></i> Anterior</a>
   <% } else { %>
   <a href="#" class="btn btn-xs btn-info disabled" disabled><i class="icon-fast-backward"></i> Primera</a>
   <a href="#" class="btn btn-xs btn-info disabled" disabled><i class="icon-step-backward"></i> Anterior</a>
   <% } %>
-  <span class="paginador-current-report">Pagina <%= pagina_actual %> de <%= total_paginas %></span>
+  <span class="paginador-current-report">Pagina <%- pagina_actual %> de <%- total_paginas %></span>
   <% if (pagina !== total_paginas) { %>
-    <a href="<%= ruta %>?pagina=<%= pagina + 1 %>" class="btn btn-xs btn-info" data-remote="true"><i class="icon-step-forward"></i> Siguiente</a>
-    <a href="<%= ruta %>?pagina=<%= total_paginas %>" class="btn btn-xs btn-info" data-remote="true"><i class="icon-fast-forward"></i> Última</a>
+    <a href="<%- ruta %>?pagina=<%- pagina + 1 %>" class="btn btn-xs btn-info" data-remote="true"><i class="icon-step-forward"></i> Siguiente</a>
+    <a href="<%- ruta %>?pagina=<%- total_paginas %>" class="btn btn-xs btn-info" data-remote="true"><i class="icon-fast-forward"></i> Última</a>
   <% } else { %>
   <a href="#" class="btn btn-xs btn-info disabled" disabled><i class="icon-fast-backward"></i> Siguiente</a>
   <a href="#" class="btn btn-xs btn-info disabled" disabled><i class="icon-step-backward"></i> Última</a>

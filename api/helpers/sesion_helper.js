@@ -96,6 +96,7 @@ exports.autorizacion = function(allowedURLs, defaultURL, basename) {
     if (typeof req.session.usuario_actual === 'undefined' && allowedURLs.indexOf(requestedURL) < 0){
       res.send(302, {
         url: '/',
+        template: 'paginasEstaticas/index',
         error: 'No autorizado'
       });
     } else {

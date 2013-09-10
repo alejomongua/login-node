@@ -120,7 +120,7 @@ app.all('*', function(req,res){
     options.body =  req.body;
   }
   request(options, function(error, response, body){
-    if(error){
+     if(error){
       req.session.mensajes.error = error;
       res.status(500).render('common/500'); // Mostrar página de error 500
     } else {
@@ -132,10 +132,16 @@ app.all('*', function(req,res){
       } else {
         if (body){
           if (body.error){
-            req.session.mensajes.error = body.error;
+            if(typeof body.error === 'string'){
+              req.session.mensajes.error = body.error;
+            }
           }
           if (body.url){
-            res.redirect(body.url);
+            if(Math.floor(response.statusCode / 100) == 3){
+              res.redirect(response.statusCode, body.url);
+            } else {
+              res.redirect(body.url);
+            }
           } else if (body.template){
             res.render(body.template, body);
           } else {
