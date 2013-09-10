@@ -2,6 +2,7 @@ if(typeof myApplication === 'undefined'){
   myApplication = {};
 }
 
+var myApplication.Usuario = Backbone.Model.extend({});
 var myApplication.usuarios = Backbone.Collection.extend({
   initialize: function() {
     _.bindAll(this, 'parse', 'url', 'pageInfo', 'nextPage', 'previousPage');
@@ -9,7 +10,7 @@ var myApplication.usuarios = Backbone.Collection.extend({
     this.page = 1;
     this.perPage = 10;
   },
-  fetch: function(options) {
+  fetch: function(options) {w
     typeof(options) != 'undefined' || (options = {});
     this.trigger("fetching");
     var self = this;

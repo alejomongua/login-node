@@ -95,6 +95,8 @@ myApplication.renderTemplate = function(template, dest, context, options){
   }
   $.ajax({
     url: url,
+    type: 'GET',
+    dataType: 'html',
     success: function(data, b, c){
       var result = _.template(data, context);
       switch(posicion){
@@ -165,15 +167,12 @@ myApplication.navegarA = function(destination, options, data){
       method = options.method;
     }
   }
-  if (data){
-    data = JSON.stringify(data);
-  }
   myApplication.flash(); // Borra los mensajes en el flash
   $.ajax({
-    url: '/api' + destination,
+    url: destination,
     type: method,
     data: data,
-    contentType: 'application/json',
+    dataType: 'json',
     success: function(context){
       navegarAjax(context);
     },
@@ -378,7 +377,9 @@ myApplication.inicializar = function($){
   }
   // Cargue el usuario actual
   $.ajax({
-    url: '/api/sesiones',
+    url: '/sesiones',
+    type: 'GET',
+    dataType: 'json',
     success: function(u){
       myApplication.usuario_actual = u;
     }
@@ -391,6 +392,10 @@ myApplication.inicializar = function($){
   });
   $(".chosen-select").chosen();
 };
+
+$.ajaxPrefilter("json", function( options, originalOptions, jqXHR ) {
+  options.url = 'http://api.localhost' + options.url;
+});
 
 jQuery(document).ready(myApplication.inicializar);
 

@@ -11,16 +11,11 @@
     "ejs": "*",
     "less-middleware": "*",
     "mocha":"*",
-    "nodemailer":"*",
     "chai": "*",
     "should": "*",
-    "mongoose":"*",
-    "bcrypt":"*",
-    "crypto":"*",
     "request":"*",
     "zombie":"*",
     "moment":"*",
-    "express-helpers": "*",
-    "express-namespace": "*"
+    "express-helpers": "*"
   }
 }

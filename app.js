@@ -64,7 +64,7 @@ app.use(function (req, res, next) {
       var cookie = 'connect.sid_api=' + COOKIE_SES_API_REGEX.exec(req.headers.cookie)[1];
       cookieJar.add(request.cookie(cookie));
       request.get({
-        url: 'http://localhost:30601/api/sesiones',
+        url: 'http://localhost:30601/sesiones',
         json: true,
         jar: cookieJar,
       }, function(error, response, body){
@@ -109,7 +109,7 @@ app.all('*', function(req,res){
     cookieJar.add(request.cookie(cookie));
   }
   // El replace es para quitar el slash al final si lo hay
-  var url = 'http://localhost:30601/api' + req._parsedUrl.pathname.replace(/\/$/,'');
+  var url = 'http://localhost:30601' + req._parsedUrl.pathname.replace(/\/$/,'');
   var options = {
     jar: cookieJar,
     method: req.method,
@@ -160,7 +160,7 @@ app.all('*', function(req,res){
 });
 
 // ejecute el servidor de apis
-var api = require('./api/app');
+var api = require('../loginNodeApi/app');
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
