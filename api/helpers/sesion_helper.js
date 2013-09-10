@@ -74,7 +74,7 @@ exports.usuario_actual = function(req, res, next){
 };
 
 // Restringe las urls, salvo las indicadas explicitamente
-exports.autorizacion = function(allowedURLs, defaultURL, basename) {
+exports.autorizacion = function(allowedURLs, defaultURL) {
   if (typeof defaultURL !== 'string'){
     defaultURL = '/';
   }
@@ -86,18 +86,14 @@ exports.autorizacion = function(allowedURLs, defaultURL, basename) {
   }
   return function(req, res, next){
     var requestedURL = req._parsedUrl.pathname;
-    if (typeof basename === 'string'){
-      if(req._parsedUrl.pathname === basename){
-        requestedURL = '/';
-      } else {
-        requestedURL = req._parsedUrl.pathname.replace(basename, '');
-      }
-    }
     if (typeof req.session.usuario_actual === 'undefined' && allowedURLs.indexOf(requestedURL) < 0){
+      debugger;
       res.send(302, {
         url: '/',
         template: 'paginasEstaticas/index',
-        error: 'No autorizado'
+        mensaje: {
+          error: 'No autorizado'
+        }
       });
     } else {
       next();

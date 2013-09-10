@@ -1,15 +1,20 @@
 {
-  "name": "application-name",
+  "name": "application-name-api",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node app.js"
   },
   "dependencies": {
+    "express": "3.3.4",
     "mocha":"*",
+    "nodemailer":"*",
     "chai": "*",
     "should": "*",
-    "request":"*",
+    "mongoose":"*",
+    "bcrypt":"*",
+    "crypto":"*",
     "zombie":"*",
+    "moment":"*"
   }
 }

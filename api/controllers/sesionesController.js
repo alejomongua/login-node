@@ -4,7 +4,6 @@ var sesion = require('../helpers/sesion_helper');
  * POST sesiones
  */
 exports.create = function(req, res){
-  //debugger;
   if (typeof req.body.sesion === 'undefined') {
     res.send(400,{
       mensaje: {

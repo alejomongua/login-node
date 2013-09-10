@@ -1,0 +1,17 @@
+{
+  "name": "application-name-client",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "express": "3.3.4",
+    "ejs-locals": "*",
+    "ejs": "*",
+    "less-middleware": "*",
+    "request":"*",
+    "moment":"*",
+    "express-helpers": "*"
+  }
+}
