@@ -20,18 +20,22 @@ app.use(express.bodyParser());
 
 app.use(function(req, res, next){
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "X-Requested-With");
+  res.header("Access-Control-Allow-Headers", "X-Requested-With, X-Identificar");
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header("Content-Type", "application/json");
-  // Logea al usuario si existe la cookie
-  sesion_helper.identificar_con_cookie(req, function(err){
-    if (err){
-      console.log(err);
-      res.clearCookie('remember_token');
-      next();
-    } else {
-      next();
-    }
-  });
+  if (req.method !== 'OPTIONS'){
+    // Logea al usuario si existe la cookie
+    sesion_helper.identificar_con_header(req, function(err){
+      if (err){
+        console.log(err);      
+        next();
+      } else {
+        next();
+      }
+    });
+  } else {
+    next();
+  }
 });
 
 // Agrega las url para las que no se necesita estar autenticado
@@ -53,7 +57,7 @@ if ('development' == app.get('env')) {
 }
 
 app.options('*', function(req, res) {
-  res.send(204);
+  res.send({});
 });
 
 // Paginas estaticas:

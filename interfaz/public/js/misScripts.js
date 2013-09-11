@@ -67,11 +67,14 @@ myApplication.login = function(usuario){
   myApplication.usuario_actual = usuario;
   myApplication.renderTemplate('common/menu_usuario', $('#menu-usuario'), {usuario_actual: myApplication.usuario_actual});
   myApplication.navegarA('/dashboard', {operacion: 'replace'});
+  $.cookie("identificar", usuario.remember_token, {path: '/'});
 };
 
 myApplication.logout = function(){
-      myApplication.renderTemplate('common/menu_usuario', $('#menu-usuario'), {usuario_actual: false});
-      delete myApplication.usuario_actual;
+  myApplication.renderTemplate('common/menu_usuario', $('#menu-usuario'), {usuario_actual: false});
+  delete myApplication.usuario_actual;
+  $.removeCookie("identificar", {path: '/'});
+  $.removeCookie("connect.sid", {path: '/'});
 };
 
 /* plantillas */
@@ -173,6 +176,11 @@ myApplication.navegarA = function(destination, options, data){
     type: method,
     data: data,
     dataType: 'json',
+    beforeSend: function(req){
+      if(myApplication.usuario_actual && myApplication.usuario_actual.remember_token) {
+        req.setRequestHeader("X-Identificar", myApplication.usuario_actual.remember_token);
+      }
+    },
     success: function(context){
       navegarAjax(context);
     },
@@ -375,15 +383,25 @@ myApplication.inicializar = function($){
       }
     });
   }
-  // Cargue el usuario actual
-  $.ajax({
-    url: '/sesiones',
-    type: 'GET',
-    dataType: 'json',
-    success: function(u){
-      myApplication.usuario_actual = u;
-    }
-  });
+  // Cargue el usuario actual si existe la cookie
+  if($.cookie('identificar')) {
+    $.ajax({
+      url: '/sesiones',
+      type: 'GET',
+      dataType: 'json',
+      beforeSend: function(req){      
+        req.setRequestHeader("X-Identificar", $.cookie('identificar'));
+      },
+      success: function(u){
+        // si el valor no es válido, borre la cookie
+        if (!u) { 
+          $.cookie('identificar', null);
+        }
+        myApplication.usuario_actual = u;
+        myApplication.usuario_actual.remember_token = $.cookie('identificar');
+      }
+    });
+  }
   // Ligar eventos a elementos
   $(document).on('click', '.eliminar-elemento', function(){
       if(!confirm("Este cambio no se puede deshacer\n¿Está seguro?")){

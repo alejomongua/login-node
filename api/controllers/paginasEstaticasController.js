@@ -2,7 +2,7 @@
  * GET home page.
  */
 exports.index = function(req, res){
-  if (req.session.usuario_actual) {
+  if (req.usuario_actual) {
     res.send(302, {
       mensaje: {
         error: "Ya está logueado"
@@ -21,7 +21,7 @@ exports.index = function(req, res){
  * GET /olvide_password
  */
 exports.olvidePassword = function(req, res){
-  if (req.session.usuario_actual) {
+  if (req.usuario_actual) {
     res.send(302, {
       mensaje: {
         error: "No autorizado"
@@ -53,7 +53,7 @@ exports.enviarCorreo = function(req, res){
     }
   }
 
-  if (req.session.usuario_actual) {
+  if (req.usuario_actual) {
     res.send(302, {
       mensaje: {
         error: "No permitido, el usuario está logueado"
@@ -180,6 +180,6 @@ exports.enviarCorreo = function(req, res){
 exports.dashboard = function(req, res){
   res.send({
     template: 'paginasEstaticas/dashboard',
-    titulo: 'Bienvenido ' + req.session.usuario_actual.nombres,
+    titulo: 'Bienvenido ' + req.usuario_actual.nombres,
   });
 }

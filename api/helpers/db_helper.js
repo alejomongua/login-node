@@ -1,5 +1,4 @@
 var mongoose = require('mongoose');
-var crypto = require('crypto');
 var dbHost = 'localhost';
 var dbName;
 
@@ -21,6 +20,7 @@ mongoose.connect(dbHost, dbName);
           _findByEmail,
           _findById,
           _findByRememberToken,
+          _resetRememberToken,
           _schema,
           validadores = {};
 
@@ -122,7 +122,7 @@ mongoose.connect(dbHost, dbName);
 
       // Genera el avatar desde gravatar
       _schema.virtual('avatar').get(function(){
-        var gravatar_id = crypto.createHash('md5').update(this.email).digest('hex');
+        var gravatar_id = crypt.md5Hex(this.email);
         return "https://secure.gravatar.com/avatar/" + gravatar_id + '?s=' + s
       });
 
@@ -157,7 +157,6 @@ mongoose.connect(dbHost, dbName);
                 var usu = doc.toJSON();
 
                 delete usu['password_digest'];
-                delete usu['remember_token'];
                 delete usu['fecha_token'];
                 delete usu['token'];
                 callback(null,usu);
@@ -167,11 +166,13 @@ mongoose.connect(dbHost, dbName);
             callback(err);
           }
         });
-      }
+      };
+
       _findByRememberToken = function (rt, callback) {
         _model.findOne({'remember_token': rt})
         .select("-password_digest -remember_token -fecha_token -token")
         .exec(function(err, doc) {
+
           if(err){
             callback(err);
           } else {
@@ -190,13 +191,21 @@ mongoose.connect(dbHost, dbName);
         _model.findOne({'_id': id}).exec(callback);
       };
 
+      _resetRememberToken = function(id, callback){
+        var newRT = crypt.token();
+        _model.findOneAndUpdate({'_id': id}, {remember_token: newRT}, function(err, usuario){
+          callback(err, usuario.remember_token);
+        });
+      };
+
       return {
         model: _model,
         schema: _schema,
         update: _update,
         findById: _findById,
         findByEmail: _findByEmail,
-        findByRememberToken: _findByRememberToken
+        findByRememberToken: _findByRememberToken,
+        resetRememberToken: _resetRememberToken
       };
     }();
 

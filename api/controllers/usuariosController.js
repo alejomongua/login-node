@@ -1,11 +1,11 @@
-usuarios = require('../helpers/db_helper').usuarios;
+var usuarios = require('../helpers/db_helper').usuarios;
+var crypt = require('../helpers/crypt_helper');
 /*
  * GET recuperar_password
  */
 var gravatar = function (email, size){
-  var crypto = require('crypto');
   var s = size || 100;
-  var gravatar_id = crypto.createHash('md5').update(email).digest('hex');
+  var gravatar_id = crypt.md5Hex(email);
   return "https://secure.gravatar.com/avatar/" + gravatar_id + '?s=' + s
 };
 
@@ -23,7 +23,6 @@ exports.recuperarPassword = function(req, res){
         });
       } else {
         var u;
-        var crypt = require('../helpers/crypt_helper');
         console.log(usuario)
         if(usuario && (usuario.fecha_token > Date.now()) && (usuario.token === req.query.t) ) {
           remember_token = usuario.remember_token;
@@ -32,7 +31,7 @@ exports.recuperarPassword = function(req, res){
             token: crypt.token(),
             fecha_token: 0
           })
-          .select("-password_digest -remember_token -fecha_token -token")
+          .select("-password_digest -fecha_token -token")
           .exec(function(err, doc){
             if (err){
               console.log(err);
@@ -41,10 +40,11 @@ exports.recuperarPassword = function(req, res){
               u = doc.toJSON();
 
               res.cookie('remember_token', remember_token);
-              req.session.usuario_actual = u;
+              req.usuario_actual = u;
               res.send({
                 url: '/usuarios/' + usuario._id + '/modificar_password',
                 template: 'usuarios/modificarPassword',
+                login: usuario,
                 mensaje: {
                   success: 'Asigne una nueva contraseña'
                 }
@@ -65,8 +65,8 @@ exports.recuperarPassword = function(req, res){
  */
 exports.modificarPassword = function(req, res){
   var usuario = {};
-  if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1 ||
-      req.params.id == req.session.usuario_actual._id) {
+  if (req.usuario_actual.permisos.indexOf('usuarios') > -1 ||
+      req.params.id == req.usuario_actual._id) {
 
 
     usuarios.findById(req.params.id, function(err, usuario){
@@ -110,7 +110,7 @@ exports.index = function(req, res){
       pagina_actual,
       USUARIOS_POR_PAGINA = 10;
   // Verifica si tiene permiso para acceder a esta página
-  if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1) {
+  if (req.usuario_actual.permisos.indexOf('usuarios') > -1) {
     // Cuenta el total de usuarios (para la paginación)
     usuarios.model.count({}, function(err, count){
       // Retorna con errores en caso de haber alguno
@@ -168,7 +168,7 @@ exports.index = function(req, res){
  * GET usuarios/new
  */
 exports.new = function(req, res){
-  if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1) {
+  if (req.usuario_actual.permisos.indexOf('usuarios') > -1) {
     res.send({
       template: 'usuarios/New',
       titulo: 'Crear nuevo usuario',
@@ -189,8 +189,8 @@ exports.new = function(req, res){
  * GET usuarios/:id
  */
 exports.show = function(req, res){
-  if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1 ||
-      req.params.id == req.session.usuario_actual._id) {
+  if (req.usuario_actual.permisos.indexOf('usuarios') > -1 ||
+      req.params.id == req.usuario_actual._id) {
 
     usuarios.findById(req.params.id, function(err, usuario){
       if (err){
@@ -228,8 +228,8 @@ exports.show = function(req, res){
  */
 exports.edit = function(req, res){
   var usuario = {};
-  if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1 ||
-      req.params.id == req.session.usuario_actual._id) {
+  if (req.usuario_actual.permisos.indexOf('usuarios') > -1 ||
+      req.params.id == req.usuario_actual._id) {
 
     usuarios.findById(req.params.id, function(err, usuario){
       if (err){
@@ -268,7 +268,7 @@ exports.edit = function(req, res){
  * POST usuarios
  */
 exports.create = function(req, res){
-  if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1) {
+  if (req.usuario_actual.permisos.indexOf('usuarios') > -1) {
     user = new usuarios.model(req.body.usuario);
 
     user.save(function(err, doc){
@@ -318,11 +318,11 @@ exports.create = function(req, res){
  */
 exports.update = function(req, res){
   // Verifique que se hallan recibido datos
-  if (req.body.usuario && req.params.id && req.session.usuario_actual) {
+  if (req.body.usuario && req.params.id && req.usuario_actual) {
     // Verifique que: Sea administrador, o que sea el mismo usuario y no
     // se esté intentando modificar los permisos
-    if (req.session.usuario_actual.permisos.indexOf('usuarios') > -1 ||
-        (req.params.id == req.session.usuario_actual._id &&
+    if (req.usuario_actual.permisos.indexOf('usuarios') > -1 ||
+        (req.params.id == req.usuario_actual._id &&
           !(req.body.usuario.permisos))) {
       usuarios.update(req.params.id, req.body.usuario, function(err, usuario){
         if(err){
@@ -341,15 +341,15 @@ exports.update = function(req, res){
           }
         } else {
           if (usuario){
-            if (usuario._id == req.session.usuario_actual._id){
-              req.session.usuario_actual = usuario;
+            if (usuario._id == req.usuario_actual._id){
+              req.usuario_actual = usuario;              
               res.send({
                 url: '/usuarios/' + usuario._id,
                 template: 'usuarios/show',
-                usuario: usuario,
-                usuario_actual: usuario
+                login: usuario
               });
             } else {
+              delete usuario['remember_token'];
               res.send({
                 url: '/usuarios/' + usuario._id,
                 template: 'usuarios/show',
@@ -384,8 +384,8 @@ exports.update = function(req, res){
  */
 exports.destroy = function(req, res){
   if (req.params.id) {  
-    if ((req.session.usuario_actual.permisos.indexOf('usuarios') > -1) &&
-      (req.session.usuario_actual._id != req.params.id)) {
+    if ((req.usuario_actual.permisos.indexOf('usuarios') > -1) &&
+      (req.usuario_actual._id != req.params.id)) {
       
       usuarios.model.findByIdAndRemove(req.params.id)
         .select("-password_digest -remember_token -fecha_token -token")

@@ -37,22 +37,24 @@ exports.create = function(req, res){
  * DELETE sesiones
  */
 exports.destroy = function(req, res){
-  delete req.session.usuario_actual;
-  res.clearCookie('remember_token');
-  
-  res.send({
-    url: '/',
-    template: 'paginasEstaticas/index',
-    mensaje: {
-      success: "Sesion terminada"
-    },
-    logout: true
-  });
+  usuarios = require('../helpers/db_helper').usuarios;
+  usuarios.resetRememberToken(req.usuario_actual._id, function(err){
+    delete req.usuario_actual;
+
+    res.send({
+      url: '/',
+      template: 'paginasEstaticas/index',
+      mensaje: {
+        success: "Sesion terminada"
+      },
+      logout: true
+    });
+  });  
 };
 
 /*
  * GET sesiones
  */
 exports.show = function(req, res){
-  res.send(req.session.usuario_actual);
+  res.send(req.usuario_actual);
 } 

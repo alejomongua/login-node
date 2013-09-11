@@ -1,14 +1,13 @@
 var usuarios = require('./db_helper').usuarios;
 var crypt = require('./crypt_helper');
 
-exports.identificar_con_cookie = function (req, callback) {
-  if (typeof req.session.usuario_actual === 'undefined' &&
-    typeof req.cookies.remember_token !== 'undefined'){
-    usuarios.findByRememberToken(req.cookies.remember_token, function(err, u){
+exports.identificar_con_header = function (req, callback) {
+  if (typeof req.headers['x-identificar'] !== 'undefined'){
+    usuarios.findByRememberToken(req.headers['x-identificar'], function(err, u){
       if (err){
         callback(err)
       } else {
-        req.session.usuario_actual = u;
+        req.usuario_actual = u;
         callback();
       }
     }, function(err){
@@ -36,18 +35,12 @@ exports.identificar = function (req, res, callback) {
             } else if (resp) {
               remember_token = usuario.remember_token;
               usuarios.model.findOneAndUpdate({_id: usuario._id}, {lastLogin: Date.now()})
-                .select("-password_digest -remember_token -fecha_token -token")
+                .select("-password_digest -fecha_token -token")
                 .exec(function(err, doc){
 
                 u = doc.toJSON();
 
-                if (typeof req.body.sesion.recordar !== "undefined"){
-                  // Queda almacenada la cookie por aproximadamente 3 años
-                  res.cookie('remember_token', remember_token, {expires: new Date(Date.now() + 1e11), signed: true});  
-                } else {
-                  res.cookie('remember_token', remember_token, {signed: true});
-                }
-                req.session.usuario_actual = u;
+                req.usuario_actual = u;
 
                 callback(null,u);
               });
@@ -65,14 +58,6 @@ exports.identificar = function (req, res, callback) {
   }
 };
 
-exports.usuario_actual = function(req, res, next){
-  if ((typeof req.session.usuario_actual === 'undefined') && (typeof req.cookies.remember_token !== 'undefined')){
-    req.session.usuario_actual = identificar_con_cookie(req.cookies.remember_token);
-  } else {
-    next();
-  }
-};
-
 // Restringe las urls, salvo las indicadas explicitamente
 exports.autorizacion = function(allowedURLs, defaultURL) {
   if (typeof defaultURL !== 'string'){
@@ -86,7 +71,7 @@ exports.autorizacion = function(allowedURLs, defaultURL) {
   }
   return function(req, res, next){
     var requestedURL = req._parsedUrl.pathname;
-    if (typeof req.session.usuario_actual === 'undefined' && allowedURLs.indexOf(requestedURL) < 0){
+    if (req.method !== 'OPTIONS' && typeof req.usuario_actual === 'undefined' && allowedURLs.indexOf(requestedURL) < 0){
       debugger;
       res.send(302, {
         url: '/',

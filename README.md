@@ -9,7 +9,7 @@ Primero se deben instalar los requerimientos con el comando:
 npm install
 ```
 
-Se necesita agregar el archivo smtpTransport_helper.js con la siguiente estructura:
+Se necesita agregar el archivo smtpTransport_helper.js en api/helpers/ con la siguiente estructura:
 
 ```
 var nodemailer = require("nodemailer");

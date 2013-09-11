@@ -1,4 +1,3 @@
-
 /**
  * Module dependencies.
  */
@@ -37,7 +36,6 @@ app.use(function (req, res, next) {
     return;
   }
 
-  req.originalMethod = req.method;
   if (req.query && key in req.query) {
     req.method = req.query[key].toUpperCase();
     delete req.query[key];
@@ -46,30 +44,32 @@ app.use(function (req, res, next) {
 });
 
 app.use(express.cookieParser('TY2axQh43LnwAgkH'));
-app.use(express.session());
+app.use(express.session({cookie: {httpOnly: false}}));
 
 // Verificar si es usuario logueado
 app.use(function (req, res, next) {
   if(typeof req.session.mensajes === 'undefined') {
     req.session.mensajes = {};
   }
+  debugger;
   app.locals.flash = req.session.mensajes;
   if(!req.session.usuario_actual){
     // Inicializa en blanco para no tener un error en la plantilla
     app.locals.usuario_actual = null;
     // Lee la cookie para el servidor de apis
-    var COOKIE_SES_API_REGEX = /connect\.sid_api=([^;]*)/;
-    var cookieJar = request.jar();
-    if (COOKIE_SES_API_REGEX.test(req.headers.cookie)){
-      var cookie = 'connect.sid_api=' + COOKIE_SES_API_REGEX.exec(req.headers.cookie)[1];
-      cookieJar.add(request.cookie(cookie));
+    if(req.cookies.identificar){
+      console.log(req.cookies.identificar)
       request.get({
         url: 'http://localhost:30601/sesiones',
         json: true,
-        jar: cookieJar,
+        headers: {
+          "X-Identificar": req.cookies.identificar
+        }
       }, function(error, response, body){
+        console.log(body)
         if(body){
           req.session.usuario_actual = body;
+          req.session.usuario_actual.remember_token = req.cookies.identificar;
           app.locals.usuario_actual = req.session.usuario_actual;
           next();
         } else {
@@ -80,8 +80,9 @@ app.use(function (req, res, next) {
     } else {
       req.session.usuario_actual = null;
       next();
-    }    
+    }
   } else {
+    console.log(req.session.usuario_actual)
     app.locals.usuario_actual = req.session.usuario_actual;
     next();
   }
@@ -101,20 +102,18 @@ if ('development' == app.get('env')) {
 // Routes:
 // Paginas estaticas:
 app.all('*', function(req,res){
-  // Lee la cookie para el servidor de apis
-  var COOKIE_SES_API_REGEX = /connect\.sid_api=([^;]*)/;
-  var cookieJar = request.jar();
-  if (COOKIE_SES_API_REGEX.test(req.headers.cookie)){
-    var cookie = 'connect.sid_api=' + COOKIE_SES_API_REGEX.exec(req.headers.cookie)[1];
-    cookieJar.add(request.cookie(cookie));
-  }
+  debugger;
   // El replace es para quitar el slash al final si lo hay
   var url = 'http://localhost:30601' + req._parsedUrl.pathname.replace(/\/$/,'');
+  var headers;
+  if (req.session.usuario_actual) {
+    headers = {"X-Identificar": req.session.usuario_actual.remember_token};
+  }
   var options = {
-    jar: cookieJar,
     method: req.method,
     url: url,
-    json: true
+    json: true,
+    headers: headers
   };
   if(!isEmpty(req.body)){
     options.body =  req.body;
@@ -131,10 +130,8 @@ app.all('*', function(req,res){
         res.status(response.statusCode).render('common/500'); // Mostrar página de error 500
       } else {
         if (body){
-          if (body.error){
-            if(typeof body.error === 'string'){
-              req.session.mensajes.error = body.error;
-            }
+          if (body.mensajes){
+            req.session.mensajes = body.mensajes;
           }
           if (body.url){
             if(Math.floor(response.statusCode / 100) == 3){

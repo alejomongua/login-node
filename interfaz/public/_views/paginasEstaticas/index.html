@@ -4,7 +4,6 @@
     <form id="login_form" accept-charset="UTF-8" action="/sesiones" method="post">
       <%= myApplication.formularios.campo('sesion', 'email', 'texto') %>
       <%= myApplication.formularios.campo('sesion', 'password', 'password') %>
-      <%= myApplication.formularios.campo('sesion', 'recuerdame', 'checkbox') %>
       <div class="row">
         <div class="col-lg-offset-2 col-md-offset-3 col-sm-offset-3 col-lg-4 col-md-5 col-sm-5 col-xs-12 text-center">
           <h4><a href="/olvide_password" data-remote="true">¿Olvidó su contraseña?</a></h4>
