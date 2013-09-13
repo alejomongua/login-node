@@ -48,6 +48,10 @@
 
 var myApplication = {};
 
+/* Rutas */
+myApplication.interfaz = 'http://localhost';
+myApplication.api = 'http://api.localhost';
+
 /* utilidades */
 myApplication.capitalizeFirstLetter = function(string)
 {
@@ -62,6 +66,26 @@ myApplication.isEmpty = function(obj) {
   return Object.keys(obj).length === 0;
 };
 
+myApplication.addAuthHeader = function(request) {
+  if(myApplication.usuario_actual && myApplication.usuario_actual.remember_token) {
+    request.setRequestHeader("X-Identificar", myApplication.usuario_actual.remember_token);
+  } else {
+    request.setRequestHeader("X-Identificar", $.cookie('identificar'));
+  }
+}
+
+myApplication.getQueryVariable = function (variable) {
+  var query = window.location.search.substring(1);
+  var vars = query.split('&');
+  for (var i = 0; i < vars.length; i++) {
+      var pair = vars[i].split('=');
+      if (decodeURIComponent(pair[0]) === variable) {
+          return decodeURIComponent(pair[1]);
+      }
+  }
+  return false;
+}
+
 /* sesion */
 myApplication.login = function(usuario){
   myApplication.usuario_actual = usuario;
@@ -72,7 +96,7 @@ myApplication.login = function(usuario){
 
 myApplication.logout = function(){
   myApplication.renderTemplate('common/menu_usuario', $('#menu-usuario'), {usuario_actual: false});
-  delete myApplication.usuario_actual;
+  myApplication.usuario_actual = null;
   $.removeCookie("identificar", {path: '/'});
   $.removeCookie("connect.sid", {path: '/'});
 };
@@ -88,7 +112,7 @@ myApplication.logout = function(){
  *    append: añade el resultado al contenido de 'dest'
  *    prepend: pone el resultado antes del contenido de 'dest'
  */
-myApplication.renderTemplate = function(template, dest, context, options){
+myApplication.renderTemplate = function(template, dest, context, options, callback){
   var posicion = 'replace';
   var url = '/_views/' + template + '.html';
   if (options){
@@ -99,7 +123,6 @@ myApplication.renderTemplate = function(template, dest, context, options){
   $.ajax({
     url: url,
     type: 'GET',
-    dataType: 'html',
     success: function(data, b, c){
       var result = _.template(data, context);
       switch(posicion){
@@ -113,6 +136,14 @@ myApplication.renderTemplate = function(template, dest, context, options){
           dest.html(result);
           break;
       }
+      if(callback){
+        callback();
+      }
+    },
+    error: function(e){
+      if(callback){
+        callback(e);
+      }
     }
   });
 };
@@ -121,9 +152,9 @@ myApplication.navegarA = function(destination, options, data){
   var operacion = 'push';
   var method = 'get';
   var contenedorPrincipal = $('#main-content');
+  var d = myApplication.api + destination; // URL completa
   var navegarAjax = function(context){
     var t;
-    var d = destination;
     var tit = 'Aplicacion';
     if(context){
       if(context.mensaje){
@@ -138,26 +169,31 @@ myApplication.navegarA = function(destination, options, data){
         t = context.template;
       }
       if (context.url) {
-        d = context.url;
+        d = myApplication.api + context.url;
       }
       if (context.titulo){
         tit = context.titulo + ' | ' + tit;
       }
     }
     $('title').html(tit);
-    myApplication.renderTemplate(t, contenedorPrincipal, context, options)
+    myApplication.renderTemplate(t, contenedorPrincipal, context, options, function(){
+      if(myApplication.router){
+        Backbone.history.navigate(destination.replace(/^\//,''), {trigger: true, replace: true})
+      }
+    })
     if (operacion === 'replace'){
       history.replaceState({
-        url: d,
+        url: destination,
         template: t
-      }, null, d);
+      }, null, destination);
     }else if (operacion === 'push'){
       history.pushState({
-        url: d,
+        url: destination,
         template: t
-      }, null, d);
+      }, null, destination);
       $("body").addClass("historypushed");
     }
+    // Dispara los eventos de backbone
   }
   
   contenedorPrincipal.html('<div class="text-center"><img src="/images/ajax-loader.gif" title="cargando" alt="cargando" /></div>');
@@ -172,14 +208,11 @@ myApplication.navegarA = function(destination, options, data){
   }
   myApplication.flash(); // Borra los mensajes en el flash
   $.ajax({
-    url: destination,
+    url: d,
     type: method,
     data: data,
-    dataType: 'json',
     beforeSend: function(req){
-      if(myApplication.usuario_actual && myApplication.usuario_actual.remember_token) {
-        req.setRequestHeader("X-Identificar", myApplication.usuario_actual.remember_token);
-      }
+      myApplication.addAuthHeader(req);
     },
     success: function(context){
       navegarAjax(context);
@@ -386,19 +419,19 @@ myApplication.inicializar = function($){
   // Cargue el usuario actual si existe la cookie
   if($.cookie('identificar')) {
     $.ajax({
-      url: '/sesiones',
+      url: myApplication.api + '/sesiones',
       type: 'GET',
-      dataType: 'json',
       beforeSend: function(req){      
         req.setRequestHeader("X-Identificar", $.cookie('identificar'));
       },
       success: function(u){
         // si el valor no es válido, borre la cookie
         if (!u) { 
-          $.cookie('identificar', null);
+          myApplication.logout();
+        } else {
+          myApplication.usuario_actual = u;
+          myApplication.usuario_actual.remember_token = $.cookie('identificar');
         }
-        myApplication.usuario_actual = u;
-        myApplication.usuario_actual.remember_token = $.cookie('identificar');
       }
     });
   }
@@ -410,10 +443,6 @@ myApplication.inicializar = function($){
   });
   $(".chosen-select").chosen();
 };
-
-$.ajaxPrefilter("json", function( options, originalOptions, jqXHR ) {
-  options.url = 'http://api.localhost' + options.url;
-});
 
 jQuery(document).ready(myApplication.inicializar);
 

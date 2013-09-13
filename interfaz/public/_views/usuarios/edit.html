@@ -73,8 +73,8 @@
           <button class="btn btn-large btn-success btn-block" type="submit" data-remote="true"><i class="icon-check-sign"></i> Guardar</button>
         </div>
         <div class="col-lg-4 col-md-5 col-sm-5 col-xs-6 text-center">
-          <% if(myApplication.usuario_actual.permisos.indexOf('usuarios') > -1) { %>
-            <a class="btn btn-large btn-danger btn-block" href="/usuarios" data-remote="true">
+          <% if(myApplication.usuario_actual._id != usuario._id) { %>
+            <a class="btn btn-large btn-danger btn-block" href="/usuarios?vista=true" data-remote="true">
           <% } else { %>
             <a class="btn btn-large btn-danger btn-block" href="/usuarios/<%= usuario._id %>" data-remote="true">
           <% } %>

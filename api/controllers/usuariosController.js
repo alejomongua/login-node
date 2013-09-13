@@ -23,7 +23,6 @@ exports.recuperarPassword = function(req, res){
         });
       } else {
         var u;
-        console.log(usuario)
         if(usuario && (usuario.fecha_token > Date.now()) && (usuario.token === req.query.t) ) {
           remember_token = usuario.remember_token;
           usuarios.model.findOneAndUpdate({_id: usuario._id}, {
@@ -108,7 +107,9 @@ exports.index = function(req, res){
   var users,
       cantidad_usuarios,
       pagina_actual,
-      USUARIOS_POR_PAGINA = 10;
+      por_pagina;
+  debugger;
+
   // Verifica si tiene permiso para acceder a esta página
   if (req.usuario_actual.permisos.indexOf('usuarios') > -1) {
     // Cuenta el total de usuarios (para la paginación)
@@ -125,10 +126,11 @@ exports.index = function(req, res){
         cantidad_usuarios = count;
         // Verifica que página están solicitando
         pagina_actual = req.query.pagina || 1;
+        por_pagina = req.query.por_pagina || 10;
         // Realiza el query
         usuarios.model.find({})
-        .skip(USUARIOS_POR_PAGINA * (pagina_actual - 1))
-        .limit(USUARIOS_POR_PAGINA)
+        .skip(por_pagina * (pagina_actual - 1))
+        .limit(por_pagina)
         .select("-password_digest -remember_token -fecha_token -token")
         .exec(function(err,users){
           // Retorna con errores en caso de haber alguno
@@ -141,13 +143,21 @@ exports.index = function(req, res){
             });
           } else {
             // Retorna con el dato solicitado
-            res.send({
-              template: 'usuarios/index',
-              titulo: 'Administrar usuarios',
-              usuarios: users,
-              pagina: pagina_actual,
-              total: cantidad_usuarios
-            });
+            if(req.query.vista) {
+              res.send({
+                template: 'usuarios/index',
+                titulo: 'Administrar usuarios'
+              });
+            } else {
+              res.send({
+                template: 'usuarios/index',
+                titulo: 'Administrar usuarios',
+                pagina: pagina_actual,
+                por_pagina: por_pagina,
+                total: cantidad_usuarios,
+                usuarios: users
+              });
+            }
           }
         });
       }

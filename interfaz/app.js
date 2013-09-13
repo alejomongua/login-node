@@ -58,7 +58,6 @@ app.use(function (req, res, next) {
     app.locals.usuario_actual = null;
     // Lee la cookie para el servidor de apis
     if(req.cookies.identificar){
-      console.log(req.cookies.identificar)
       request.get({
         url: 'http://localhost:30601/sesiones',
         json: true,
@@ -66,7 +65,6 @@ app.use(function (req, res, next) {
           "X-Identificar": req.cookies.identificar
         }
       }, function(error, response, body){
-        console.log(body)
         if(body){
           req.session.usuario_actual = body;
           req.session.usuario_actual.remember_token = req.cookies.identificar;
@@ -82,7 +80,6 @@ app.use(function (req, res, next) {
       next();
     }
   } else {
-    console.log(req.session.usuario_actual)
     app.locals.usuario_actual = req.session.usuario_actual;
     next();
   }
@@ -104,14 +101,14 @@ if ('development' == app.get('env')) {
 app.all('*', function(req,res){
   debugger;
   // El replace es para quitar el slash al final si lo hay
-  var url = 'http://localhost:30601' + req._parsedUrl.pathname.replace(/\/$/,'');
+  var url = 'http://localhost:30601' + req.url;
   var headers;
   if (req.session.usuario_actual) {
     headers = {"X-Identificar": req.session.usuario_actual.remember_token};
   }
   var options = {
     method: req.method,
-    url: url,
+    url: url,    
     json: true,
     headers: headers
   };

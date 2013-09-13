@@ -11,7 +11,7 @@
       <li><a href="/usuarios/<%- myApplication.usuario_actual._id %>/modificar_password" data-remote="true">Modificar mi contraseña</a></li>
       <% if (myApplication.usuario_actual.permisos.indexOf('usuarios') > -1) { %>
         <li class="divider"></li>
-        <li><a href="/usuarios" data-remote="true">Administrar usuarios</a></li>
+        <li><a href="/usuarios?vista=true" data-remote="true">Administrar usuarios</a></li>
       <% } %>
       <li class="divider"></li>
       <li><a data-accion="cerrar-sesion" href="/sesiones?_method=DELETE" data-remote="true" data-method="DELETE">Cerrar sesión</a></li> 
