@@ -1,18 +1,18 @@
 <% for(var __i = 0; __i < usuarios.length; __i++) { %>
   <div class="item-lista-usuario row">
-    <div class="col-lg-7 col-7">
+    <div class="col-lg-9 col-md-12">
       <span class="item-lista">
-        <a href="/usuarios/<%- usuarios[__i].get('_id') %>"  class="usuarios-detalles">
+        <a href="/usuarios/<%- usuarios[__i].get('_id') %>"  class="usuarios-detalles" data-id="<%- usuarios[__i].get('_id') %>">
           <%- usuarios[__i].get('nombres') + ' ' + usuarios[__i].get('apellidos') %>
         </a>
       </span>
     </div>
-    <div class="acciones-usuario acciones col-lg-5">
+    <div class="acciones-usuario acciones col-lg-3 col-md-12">
       <a href="<%- '/usuarios/' + usuarios[__i].get('_id') + '/edit' %>" class="btn btn-primary btn-xs" data-remote="true">
         <i class="icon-edit"></i> Editar
       </a>
       <% if (usuarios[__i].get('_id') != myApplication.usuario_actual._id) { %>
-        <a href="<%- '/usuarios/' + usuarios[__i].get('_id') + '?_method=DELETE' %>" class="btn btn-danger btn-xs eliminar-elemento" data-remote="true">
+        <a href="<%- '/usuarios/' + usuarios[__i].get('_id') + '?_method=DELETE' %>" class="btn btn-danger btn-xs usuarios-borrar eliminar-elemento" data-id="<%- usuarios[__i].get('_id') %>">
           <i class="icon-trash"></i> Eliminar
         </a>
       <% } %>

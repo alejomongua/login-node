@@ -1,9 +1,24 @@
+myApplication.oldBackboneSync = Backbone.sync;
+
+Backbone.sync = function( method, model, options ) {
+  var beforeSend = options.beforeSend;
+  var that = this
+  options.beforeSend = function(req) {        
+    myApplication.addAuthHeader(req);
+    if (beforeSend) {
+      beforeSend.call(that, req);
+    }
+  };
+  return myApplication.oldBackboneSync.apply(this, [method, model, options]);
+}
+
 myApplication.Usuario = Backbone.Model.extend({
   urlRoot: myApplication.api + '/usuarios',
   idAttribute: "_id"
 });
 
 myApplication.Usuarios = Backbone.Collection.extend({
+  model: myApplication.Usuario,
   initialize: function() {
     _.bindAll(this, 'parse', 'url', 'pageInfo', 'nextPage', 'previousPage');
     this.pagina = 1;
@@ -18,7 +33,7 @@ myApplication.Usuarios = Backbone.Collection.extend({
     var success = options.success;
     options.success = function(resp) {
       self.trigger("fetched");
-      if(success) { success(self, resp); }
+      if(success) { success.call(self, resp); }
     };
     return Backbone.Collection.prototype.fetch.call(this, options);
   },
@@ -99,7 +114,7 @@ myApplication.Usuarios = Backbone.Collection.extend({
 myApplication.UsuariosView = Backbone.View.extend({
   el: '#main-content',
   initialize: function() {
-    _.bindAll(this, 'previous', 'next', 'first', 'last', 'detalles', 'render');
+    _.bindAll(this, 'previous', 'next', 'first', 'last', 'detalles', 'borrar', 'render');
     this.collection.bind('refresh', this.render);
   },
   events: {
@@ -107,7 +122,8 @@ myApplication.UsuariosView = Backbone.View.extend({
     'click a.usuarios-prev': 'previous',
     'click a.usuarios-next': 'next',
     'click a.usuarios-last': 'last',
-    'click a.usuarios-detalles' : 'detalles'
+    'click a.usuarios-detalles' : 'detalles',
+    'click a.usuarios-borrar': 'borrar'
   },
   render: function() {
     var that = this;
@@ -115,7 +131,6 @@ myApplication.UsuariosView = Backbone.View.extend({
     this.collection.fetch({
       beforeSend: function(req) {
         elemento.html('<div class="text-center"><img src="/images/ajax-loader.gif" title="cargando" alt="cargando" /></div>');
-        myApplication.addAuthHeader(req);
       },
       success: function(data){
         myApplication.renderTemplate('common/_paginacion', $('.paginacion'), that.collection.pageInfo());
@@ -160,7 +175,39 @@ myApplication.UsuariosView = Backbone.View.extend({
   },
 
   detalles: function(e) {
-    $(e.currentTarget.parent)
+    // Borra los detalles de los otros usuarios (si hay)
+    $('.usuarios-mostrar-detalles').remove();
+    // Encuentra el elemento clickeado
+    var elemento = $(e.currentTarget);
+    // Determina el elemento dentro de la coleccion
+    var usuario = this.collection.get(elemento.attr('data-id'));
+    // Agrega el div para mostrar los detalles
+    elemento.parent().append('<div class="usuarios-mostrar-detalles"></div>');
+    // muestra los detalles
+    myApplication.renderTemplate('usuarios/show', $('.usuarios-mostrar-detalles'),{usuario: usuario.toJSON()})
+    return false;
+  },
+
+  borrar: function(e) {
+    if(!confirm("Este cambio no se puede deshacer\n¿Está seguro?")){
+      return false;
+    }
+    var that = this;
+    // Encuentra el elemento clickeado
+    var elemento = $(e.currentTarget);
+    // Determina el elemento dentro de la coleccion
+    var usuario = this.collection.get(elemento.attr('data-id'));
+    // Elimina el elemento
+    this.collection.remove(usuario);
+    usuario.destroy({      
+      success: function(data){
+        // Realiza el efecto de eliminacion
+        elemento.parent().parent().html('<div class="alert alert-error">Usuario eliminado</div>');
+        setTimeout(function(){
+          that.render()
+        },1000);
+      }
+    });
     return false;
   }
 });

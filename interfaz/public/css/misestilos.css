@@ -13,7 +13,7 @@ footer{
   font-size:0.9em;
 }
 
-div.lista-elementos span.item-lista{
+div.lista-elementos span.item-lista a{
   font-size:1.2em;
   font-weight: bolder;
 }
@@ -59,4 +59,8 @@ div.navbar.navbar-fixed-top{
 
 .btn{
   margin: 1em 0;
+}
+
+hr{
+  border-top-color:#ccc;
 }

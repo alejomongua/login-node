@@ -435,12 +435,6 @@ myApplication.inicializar = function($){
       }
     });
   }
-  // Ligar eventos a elementos
-  $(document).on('click', '.eliminar-elemento', function(){
-      if(!confirm("Este cambio no se puede deshacer\n¿Está seguro?")){
-          return false;
-      }
-  });
   $(".chosen-select").chosen();
 };
 
