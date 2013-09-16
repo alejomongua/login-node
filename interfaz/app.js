@@ -51,7 +51,6 @@ app.use(function (req, res, next) {
   if(typeof req.session.mensajes === 'undefined') {
     req.session.mensajes = {};
   }
-  debugger;
   app.locals.flash = req.session.mensajes;
   if(!req.session.usuario_actual){
     // Inicializa en blanco para no tener un error en la plantilla
@@ -99,7 +98,6 @@ if ('development' == app.get('env')) {
 // Routes:
 // Paginas estaticas:
 app.all('*', function(req,res){
-  debugger;
   // El replace es para quitar el slash al final si lo hay
   var url = 'http://localhost:30601' + req.url;
   var headers;
@@ -127,6 +125,11 @@ app.all('*', function(req,res){
         res.status(response.statusCode).render('common/500'); // Mostrar página de error 500
       } else {
         if (body){
+          if(body.login){
+            req.session.usuario_actual = body.login;
+            res.cookie("identificar", req.session.usuario_actual.remember_token);
+            app.locals.usuario_actual = req.session.usuario_actual;
+          }
           if (body.mensajes){
             req.session.mensajes = body.mensajes;
           }

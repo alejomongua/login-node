@@ -34,15 +34,9 @@ exports.identificar = function (req, res, callback) {
               console.log(err);
             } else if (resp) {
               remember_token = usuario.remember_token;
-              usuarios.model.findOneAndUpdate({_id: usuario._id}, {lastLogin: Date.now()})
-                .select("-password_digest -fecha_token -token")
-                .exec(function(err, doc){
-
-                u = doc.toJSON();
-
-                req.usuario_actual = u;
-
-                callback(null,u);
+              usuarios.updateLastLogin(usuario._id, function(err, doc){
+                req.usuario_actual = doc;
+                callback(null,doc);
               });
             } else {
               callback('Contraseña incorrecta');
@@ -72,7 +66,6 @@ exports.autorizacion = function(allowedURLs, defaultURL) {
   return function(req, res, next){
     var requestedURL = req._parsedUrl.pathname;
     if (req.method !== 'OPTIONS' && typeof req.usuario_actual === 'undefined' && allowedURLs.indexOf(requestedURL) < 0){
-      debugger;
       res.send(302, {
         url: '/',
         template: 'paginasEstaticas/index',

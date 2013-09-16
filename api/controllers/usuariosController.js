@@ -22,28 +22,18 @@ exports.recuperarPassword = function(req, res){
           }
         });
       } else {
-        var u;
         if(usuario && (usuario.fecha_token > Date.now()) && (usuario.token === req.query.t) ) {
           remember_token = usuario.remember_token;
-          usuarios.model.findOneAndUpdate({_id: usuario._id}, {
-            lastLogin: Date.now(),
-            token: crypt.token(),
-            fecha_token: 0
-          })
-          .select("-password_digest -fecha_token -token")
-          .exec(function(err, doc){
+          usuarios.updateLastLogin(usuario._id, function(err, u){
             if (err){
               console.log(err);
               res.send(500);
             } else {
-              u = doc.toJSON();
-
-              res.cookie('remember_token', remember_token);
               req.usuario_actual = u;
               res.send({
-                url: '/usuarios/' + usuario._id + '/modificar_password',
+                url: '/usuarios/' + req.usuario_actual._id + '/modificar_password',
                 template: 'usuarios/modificarPassword',
-                login: usuario,
+                login: req.usuario_actual,
                 mensaje: {
                   success: 'Asigne una nueva contraseña'
                 }
@@ -108,12 +98,11 @@ exports.index = function(req, res){
       cantidad_usuarios,
       pagina_actual,
       por_pagina;
-  debugger;
 
   // Verifica si tiene permiso para acceder a esta página
   if (req.usuario_actual.permisos.indexOf('usuarios') > -1) {
     // Cuenta el total de usuarios (para la paginación)
-    usuarios.model.count({}, function(err, count){
+    usuarios.count(function(err, count){
       // Retorna con errores en caso de haber alguno
       if (err){
         console.log(err);
@@ -128,11 +117,7 @@ exports.index = function(req, res){
         pagina_actual = req.query.pagina || 1;
         por_pagina = req.query.por_pagina || 10;
         // Realiza el query
-        usuarios.model.find({})
-        .skip(por_pagina * (pagina_actual - 1))
-        .limit(por_pagina)
-        .select("-password_digest -remember_token -fecha_token -token")
-        .exec(function(err,users){
+        usuarios.paginate(pagina_actual, por_pagina, function(err,users){
           // Retorna con errores en caso de haber alguno
           if (err){
             console.log(err);
@@ -279,9 +264,7 @@ exports.edit = function(req, res){
  */
 exports.create = function(req, res){
   if (req.usuario_actual.permisos.indexOf('usuarios') > -1) {
-    user = new usuarios.model(req.body.usuario);
-
-    user.save(function(err, doc){
+    user = usuarios.create(req.body.usuario, function(err, doc){
       if (err){
         if(err.errors){
           res.send(302, {
@@ -298,12 +281,6 @@ exports.create = function(req, res){
         });
         }
       } else {
-        var usuario = doc.toJSON();
-
-        delete usuario['password_digest'];
-        delete usuario['remember_token'];
-        delete usuario['fecha_token'];
-        delete usuario['token'];
 
         res.send({
           url: '/usuarios/' + usuario._id,
@@ -351,12 +328,13 @@ exports.update = function(req, res){
           }
         } else {
           if (usuario){
-            if (usuario._id == req.usuario_actual._id){
+            if (usuario._id.toString() == req.usuario_actual._id.toString()){
               req.usuario_actual = usuario;              
               res.send({
                 url: '/usuarios/' + usuario._id,
                 template: 'usuarios/show',
-                login: usuario
+                login: usuario,
+                usuario: usuario
               });
             } else {
               delete usuario['remember_token'];
@@ -397,9 +375,7 @@ exports.destroy = function(req, res){
     if ((req.usuario_actual.permisos.indexOf('usuarios') > -1) &&
       (req.usuario_actual._id != req.params.id)) {
       
-      usuarios.model.findByIdAndRemove(req.params.id)
-        .select("-password_digest -remember_token -fecha_token -token")
-        .exec(function (err, doc) {
+      usuarios.findByIdAndRemove(req.params.id, function (err, usuario) {
         if (err) {
           console.log(err);
           res.send(500,{
@@ -408,8 +384,7 @@ exports.destroy = function(req, res){
             }
           });
         } else {
-          if (doc) {
-            var usuario = doc.toJSON();
+          if (usuario) {
 
             res.send({
               usuario: usuario

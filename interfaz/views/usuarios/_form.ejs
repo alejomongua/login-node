@@ -1,6 +1,6 @@
 <div class="row">
   <div class="col-lg-offset-2 col-md-offset-1 col-xs-12 col-md-10 col-sm-10 col-lg-8">
-    <form accept-charset="UTF-8" action="/usuarios<%= usuario._id ? '/' + usuario._id : '' %>" method="post">
+    <form id="usuarios_form" accept-charset="UTF-8" action="/usuarios<%= usuario._id ? '/' + usuario._id : '' %>" method="post" <%- usuario._id ? 'data-method="PUT"' : '' %>>
         <% if (usuario._id) { %>
           <input type="hidden" name="_method" value="PUT">
           <input type="hidden" name="usuario[_id]" value="<%= usuario._id %>">
@@ -69,10 +69,10 @@
         <% } %>
         <div class="row">
           <div class="col-lg-4 col-md-5 col-sm-5 col-xs-6 text-center">
-            <button class="btn btn-large btn-success btn-block" type="submit" data-remote="true"><i class="icon-check-sign"></i> Guardar</button>
+            <button class="btn btn-large btn-success btn-block" type="submit" data-remote="true" data-formulario="usuarios_form"><i class="icon-check-sign"></i> Guardar</button>
           </div>
           <div class="col-lg-4 col-md-5 col-sm-5 col-xs-6 text-center">
-            <% if(myApplication.usuario_actual._id != usuario._id) { %>
+            <% if(usuario_actual._id != usuario._id) { %>
               <a class="btn btn-large btn-danger btn-block" href="/usuarios?vista=true" data-remote="true">
             <% } else { %>
               <a class="btn btn-large btn-danger btn-block" href="/usuarios/<%= usuario._id %>" data-remote="true">

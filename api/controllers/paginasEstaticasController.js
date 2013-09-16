@@ -80,9 +80,9 @@ exports.enviarCorreo = function(req, res){
 
           moment.lang('es');
           if (doc){
-            doc.token = crypt.token(); // Establezca el token
-            doc.fecha_token = Date.now() + 8.64e7; // Vigencia de un dia
-            doc.save(function(err){
+            var newToken = crypt.token();
+            var newFechaToken = Date.now() + 8.64e7; // mañana a esta hora
+            usuarios.update(doc._id, {token: newToken, fecha_token: newFechaToken}, function(err,usuario){
               if (err){              
                 console.log(err);
                 res.send(302, {
@@ -94,8 +94,8 @@ exports.enviarCorreo = function(req, res){
                 });
               } else {
                 // enviar correo
-                var url = host + '/recuperar_password?id='+ doc._id + '&t=' + doc.token;
-                var fecha = moment(doc.fecha_token).format('LLLL');
+                var url = host + '/recuperar_password?id='+ usuario._id + '&t=' + newToken;
+                var fecha = moment(newFechaToken).format('LLLL');
                 var html =  '<!DOCTYPE html>' +
                             '<html>' +
                             '  <head>' +
@@ -144,7 +144,9 @@ exports.enviarCorreo = function(req, res){
                     res.send({
                       url: '/',
                       template: 'paginasEstaticas/index',
-                      mensaje: 'Correo enviado a ' + doc.email
+                      mensaje: {
+                        success: 'Correo enviado a ' + doc.email
+                      }
                     });
                   }
                 });

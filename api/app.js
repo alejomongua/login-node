@@ -24,7 +24,7 @@ app.use(function(req, res, next){
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header("Content-Type", "application/json");
   if (req.method !== 'OPTIONS'){
-    // Logea al usuario si existe la cookie
+    // Identifica el usuario con el header
     sesion_helper.identificar_con_header(req, function(err){
       if (err){
         console.log(err);      
